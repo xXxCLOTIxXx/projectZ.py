@@ -19,7 +19,7 @@ __copyright__ = 'Copyright 2023 Xsarz'
 __version__ = '1.0'
 
 def init():
-	__newest__ = loads(get("https://pypi.org/pypi/aminoxz/json").text)["info"]["version"]
+	__newest__ = loads(get("https://pypi.org/pypi/projectZ.py/json").text)["info"]["version"]
 	if __version__ != __newest__:
 		s('cls || clear')
 		print(fore.ORANGE_1, f'{__title__} made by {__author__}\nPlease update the library. Your version: {__version__}  A new version:{__newest__}', fore.WHITE)
