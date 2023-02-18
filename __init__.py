@@ -17,7 +17,7 @@ __title__ = 'projectZ.py'
 __author__ = 'Xsarz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Xsarz'
-__version__ = '1.1'
+__version__ = '1.1.3'
 
 def init():
 	__newest__ = loads(get("https://pypi.org/pypi/projectZ.py/json").text)["info"]["version"]

@@ -33,6 +33,11 @@ class NoWalletError(Exception):
 		Exception.__init__(*args, **kwargs)
 
 
+class InvalidFile(Exception):
+	def __init__(*args, **kwargs):
+		Exception.__init__(*args, **kwargs)
+
+
 errors = {
 	4604: InvalidLink,
 	2010: IncorrectPassword,

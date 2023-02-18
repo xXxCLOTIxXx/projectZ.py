@@ -6,13 +6,16 @@ from json import dumps, loads
 from requests import Session
 from random import randint
 from sys import maxsize
+from uuid import UUID
+from typing import BinaryIO
+from binascii import hexlify
+from os import urandom
 
 gen = generator.Generator()
 
 class Client(Socket, CallBacks):
 	def __init__(self, deviceId: str = None, proxies: dict = None, socket_debug: bool = False, sock_trace: bool = False, language: str = "en-US", country_code: str = "en", time_zone: int = 180):
 		self.api = 'https://api.projz.com'
-		self.web_api = 'https://www.projz.com'
 		self.session = Session()
 		self.proxies = None
 		self.deviceId = deviceId if deviceId else gen.deviceId()
@@ -44,13 +47,10 @@ class Client(Socket, CallBacks):
 		else:
 			raise exceptions.WrongType(type(proxy))
 
-	def upload_media(self, file):
-		#TO DO THIS
-		data = {'file':file.read()}
+	def upload_media(self, file: BinaryIO, target: int = 1):
+		#TODO
+		return None
 
-		endpoint = '/v1/media/upload?target=1&duration=0'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), files=data, proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Icon(loads(response.text))
 
 
 	def login(self, email: str, password: str):
@@ -161,7 +161,7 @@ class Client(Socket, CallBacks):
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
-	def register(self, email: str, password: str, code: str, icon, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'XsarzBot', gender: int = 100, birthday: str = '1990-01-01'):
+	def register(self, email: str, password: str, code: str, icon: BinaryIO, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'XsarzBot', gender: int = 100, birthday: str = '1990-01-01'):
 
 		data = dumps({
 			"authType": 1,
@@ -172,7 +172,7 @@ class Client(Socket, CallBacks):
 			"invitationCode": invitation_code or "",
 			"nickname": nickname,
 			"tagLine": tag_line,
-			"icon": self.upload_media(icon).json,
+			"icon": self.upload_media(target=1, file=icon),
 			"nameCardBackground": None,
 			"gender": gender,
 			"birthday": birthday,
