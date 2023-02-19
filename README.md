@@ -3,8 +3,12 @@
 		<tr> <th colspan="3">Library Information</th> </tr>
 		<tr>
 			<td>
-				<a href='https://nz-uapy.readthedocs.io/en/latest/'><img src="https://pbs.twimg.com/profile_images/525686734760067072/OhsWgbsr_400x400.png" height="30px">
+				<a href='https://projectzpy.readthedocs.io/en/latest/'><img src="https://pbs.twimg.com/profile_images/525686734760067072/OhsWgbsr_400x400.png" height="30px">
 				 Library Documentation</a>
+			</td>
+			<td>
+				<a href='https://pypi.org/project/projectZ.py/'><img src="https://raw.githubusercontent.com/github/explore/666de02829613e0244e9441b114edb85781e972c/topics/pip/pip.png" height="30px">
+				 Library in pypi</a>
 			</td>
 	</table>
 	<table align="center">
