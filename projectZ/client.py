@@ -138,7 +138,7 @@ class Client(Socket, CallBacks):
 		if poll_id: data["extensions"]["pollId"] = poll_id
 		if dice_id: data["extensions"]["diceId"] = dice_id
 
-		resp = self.socket.send(t=1, data=data, threadId=chatId)
+		resp = self.send(t=1, data=data, threadId=chatId)
 		return resp
 
 	def get_verify_code(self, email: str):
