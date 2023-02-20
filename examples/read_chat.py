@@ -1,7 +1,7 @@
 import projectZ
 
 client = projectZ.Client()
-client.login(email='rolaaav11@gmail.com', password='9379992p!')
+client.login(email='email', password='password')
 
 
 @client.event("on_text_message")
