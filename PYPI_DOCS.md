@@ -7,7 +7,7 @@
 		</td>
 		<td>
 			<a href='https://github.com/xXxCLOTIxXx/projectZ.py'><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" height="30px">
-			 GitGub</a>
+			 GitHub</a>
 		</td>
 </table>
 <table align="center">
