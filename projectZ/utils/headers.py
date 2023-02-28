@@ -2,13 +2,14 @@ from time import time
 from uuid import uuid4
 
 class Headers:
-	def __init__(self, deviceId: str, time_zone: int = 180, country_code: str = "en", language: str = "en-US"):
+	def __init__(self, deviceId: str, sid: str = None, time_zone: int = 180, country_code: str = "en", language: str = "en-US"):
+		self.sid = sid
 		self.deviceId = deviceId
 		self.time_zone = time_zone
 		self.country_code = country_code
 		self.language = language
 
-	def Headers(self, sid: str = None):
+	def Headers(self):
 
 		headers = {
 			"rawDeviceId": self.deviceId,
@@ -18,7 +19,7 @@ class Headers:
 			"carrierCountryCodes": self.country_code,
 			"timeZone": str(self.time_zone),
 			"reqTime": str(int(time() * 1000)),
-			"sId": sid if sid else ''
+			"sId": self.sid if self.sid else ''
 		}
 
 		return headers

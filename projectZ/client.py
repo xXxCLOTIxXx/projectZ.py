@@ -10,7 +10,7 @@ from uuid import UUID
 from typing import BinaryIO
 from binascii import hexlify
 from os import urandom
-
+from threading import Thread
 gen = generator.Generator()
 
 class Client(Socket, CallBacks):
@@ -20,29 +20,28 @@ class Client(Socket, CallBacks):
 		self.proxies = None
 		self.deviceId = deviceId if deviceId else gen.deviceId()
 		self.profile = objects.User()
-
 		self.language = language
 		self.country_code = country_code
 		self.time_zone = time_zone
-		self.header = headers.Headers(deviceId=self.deviceId, time_zone=self.time_zone, country_code=self.country_code, language=self.language)
 
-		Socket.__init__(self, sock_trace=sock_trace, debug=socket_debug)
+		Socket.__init__(self, self, sock_trace=sock_trace, debug=socket_debug)
 		CallBacks.__init__(self)
 
 
-	def get_headers(self, endpoint: str, data = None, content_type: str = 'application/json') -> dict:
-		head = self.header.get_persistent_headers()
-		head.update(self.header.Headers(sid=self.profile.sid))
+	def parse_headers(self, endpoint: str, data = None, content_type: str = 'application/json') -> dict:
+		h = headers.Headers(deviceId=self.deviceId, sid=self.profile.sid, time_zone=self.time_zone, country_code=self.country_code, language=self.language)
+		head = h.get_persistent_headers()
+		head.update(h.Headers())
 		head.update({"Content-Type": content_type} if content_type else {})
 		head["HJTRFS"] = gen.signature(path=endpoint, headers=head, body=data or bytes())
 		return head
 
 	def set_proxies(self, proxy = None):
-		if type(proxy) == type({}):
+		if type(proxy) == dict:
 			self.proxies = proxy
-		elif type(proxy) == type(''):
+		elif type(proxy) == str:
 			self.proxies={"http": proxy, "https": proxy}
-		elif type(proxy) == type(None):
+		elif proxy == None:
 			self.proxies=None
 		else:
 			raise exceptions.WrongType(type(proxy))
@@ -61,66 +60,69 @@ class Client(Socket, CallBacks):
 			"password": password
 		})
 		endpoint = '/v1/auth/login'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		if response.status_code != 200:return exceptions.CheckException(response.text)
 		else:
 			self.profile = objects.User(loads(response.text))
-			self.profile.User
-			self.connect(self.get_headers)
+			self.connect()
 			return self.profile
 
 	def logout(self):
 
 		endpoint = '/v1/auth/logout'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		self.profile = objects.User()
 		self.disconnect()
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
+	def Online(self):
+		self.online_loop_active = True
+		Thread(target=self.online_loop).start()
+		return self.online_loop_active
+
+	def Offline(self):
+		self.online_loop_active = False
+		return self.online_loop_active
 
 	def join_chat(self, chatId: int) -> None:
 
 		endpoint = f'/v1/chat/threads/{chatId}/members'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def leave_chat(self, chatId: int) -> None:
 
 		endpoint = f'/v1/chat/threads/{chatId}/members'
-		response = self.session.delete(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def get_from_link(self, link: str):
 		data = dumps({"link": link})
 
 		endpoint = f"/v1/links/path"
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.FromLink(loads(response.text)).FromLink
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.FromLink(loads(response.text))
 
-	def get_link(self, userId: int = None, chatId: int = None, circleId: int = None):
-		data = {
+	def get_link(self, userId: int):
+
+		data = dumps({
 			"objectId": 0,
 			"objectType": 0,
 			"parentId": 0,
+			"path": f"user/{userId}",
 			"circleIdForCircleAnnouncement": 0,
 			"parentType": 0
-		}
-		if userId:data['path'] = f"user/{userId}"
-		elif chatId: data['path'] = f"chat/{chatId}"
-		elif circleId: data['path'] = f"circle/{circleId}"
-		else: raise exceptions.WrongType
+		})
 
-
-		data = dumps(data)
 		endpoint = '/v1/links/share'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.FromLink(loads(response.text)).FromLink
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.FromLink(loads(response.text))
 
 	def get_my_chats(self, start: int = 0, size: int = 20, type: str = 'managed'):
 
 		endpoint = f'/v1/chat/joined-threads?start={start}&size={size}&type={type}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Thread(loads(response.text)).Thread
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Thread(loads(response.text))
 
 
 	def send_message(self, chatId: int, message: str, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None):
@@ -162,7 +164,7 @@ class Client(Socket, CallBacks):
 		})
 
 		endpoint = '/v1/auth/request-security-validation'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def register(self, email: str, password: str, code: str, icon: BinaryIO, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'XsarzBot', gender: int = 100, birthday: str = '1990-01-01'):
@@ -188,14 +190,14 @@ class Client(Socket, CallBacks):
 		})
 
 		endpoint = '/v1/auth/register'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 
 	def visit(self, userId):
 
 		endpoint = f'/v1/users/profile/{userId}/visit'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def activate_wallet(self, wallet_password: str, code: str, email: str = None):
@@ -209,89 +211,80 @@ class Client(Socket, CallBacks):
 		})
 
 		endpoint = '/biz/v1/wallet/0/activate'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def activate_shop(self):
 
 		endpoint = '/biz/v1/activate-store'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 	def wallet_info(self):
 
 		endpoint = '/biz/v1/wallet'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 	def my_nfts(self):
 
 		endpoint = '/biz/v1/nfts/count'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 
 	def get_baners(self):
 
 		endpoint = '/v2/banners'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 	def get_circles(self, type: str = 'recommend', categoryId: int = 0, size: int = 10):
 
 		endpoint = f'/v1/circles?type={type}&categoryId={categoryId}&size={size}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 	def get_blocked_users(self):
 
 		endpoint = '/v1/users/block-uids'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 	def get_blogs(self, type: str = 'recommend', size: int = 10):
 
 		endpoint = f'/v1/blogs?type={type}&size={size}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 
-	def mark_as_read(self, chatId):
+	def mark_as_read(self, chatId: int):
 
 		endpoint = f'/v1/chat/threads/{chatId}/mark-as-read'
-		response = self.session.post(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
-	def get_chat_threads(self, chatId):
+	def get_chat_threads(self, chatId: int):
 
 		endpoint=f'/v1/chat/threads/{chatId}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
-	def get_online_chat_members(self, chatId):
+	def get_online_chat_members(self, chatId: int):
 
 		endpoint=f'/v1/chat/threads/{chatId}/online-members'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
 
-	def get_chat_messages(self, chatId, size: int = 10):
+	def get_chat_messages(self, chatId: int, size: int = 10):
 
 		endpoint=f'/v1/chat/threads/{chatId}/messages?size={size}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
 
-	def get_circles_blogs(self, circleId: int, type: str = "popular", size: int = 10):
-
-		if type == 'popular': endpoint=f'/v1/circles/{circleId}/popular-blogs?size={size}'
-		elif type == 'pinned': endpoint = f'v1/circles/{circleId}/pinned-blogs'
-
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
-
-
-	def get_circles_info(self, circleId: int):
-
-		endpoint=f'/v1/circles/{circleId}'
-		response = self.session.get(f"{self.api}{endpoint}", headers=self.get_headers(endpoint=endpoint), proxies=self.proxies)
+	def get_mention_candidates(self, chatId: int, size: int = 10, queryWord: str = ''):
+		
+		endpoint = f'/v1/chat/threads/{chatId}/mention-candidates?size={size}&queryWord={queryWord}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
