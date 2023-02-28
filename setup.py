@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
-with open("PYPI_DOCS.md", "r") as file:
+with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.4.1'
+ver = 1.1.4.1.1'
 
 setup(
 	name = "projectZ.py",
