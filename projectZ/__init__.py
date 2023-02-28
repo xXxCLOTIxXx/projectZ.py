@@ -19,6 +19,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Xsarz'
 __version__ = '1.1.4.1.1'
 
+
 __newest__ = loads(get("https://pypi.org/pypi/projectZ.py/json").text)["info"]["version"]
 if __version__ != __newest__:
 	s('cls || clear')
