@@ -288,3 +288,96 @@ class Client(Socket, CallBacks):
 		endpoint = f'/v1/chat/threads/{chatId}/mention-candidates?size={size}&queryWord={queryWord}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+
+	def comment(self, message: str, userId: int = None, blogId: int = None, replyId: dict = None):
+
+		data = {
+			"commentId": 0,
+			"status":1,
+			"parentId": userId,
+			"replyId": 0,
+			"circleId": 0,
+			"uid": 0,
+			"content": message,
+			"mediaList": [],
+			"commentType": 1,
+			"subComments": [],
+			"subCommentsCount": 0,
+			"isPinned": False
+		}
+
+		if userId:
+			data['parentType'] = 4
+
+		elif blogId:
+			data['parentType'] = 2
+
+		else:
+			raise exceptions.WrongType()
+
+
+		if replyId:
+			data['replyId'] = replyId['commentId']
+			data['extensions'] = {"replyToUid": replyId['userId'], "contentStatus": 1}
+
+		data = dumps(data)
+		endpoint = f'/v1/comments'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+
+
+	def get_comments(self, userId: int, type: int = 4, replyId: int= 0, size: int = 30, onlyPinned: int = 0):
+
+		endpoint = f'/v1/comments?parentId={userId}&parentType={type}&replyId={replyId}&size={size}&onlyPinned={onlyPinned}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+
+
+	def block(self, userId: int):
+
+		endpoint = f'/v1/users/block/{userId}'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+	def unblock(self, userId: int):
+
+		endpoint = f'/v1/users/block/{userId}'
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+
+	def accept_chat_invitation(self, chatId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}/accept-invitation'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def join_circle(self, circleId):
+		data = dumps({"joinMethod": 1})
+
+		endpoint = f'/v1/circles/{circleId}/members'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def leave_circle(self, circleId):
+
+		endpoint = f'/v1/circles/{circleId}/members'
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def get_circle_info(self, circleId: int):
+
+		endpoint = f'/v1/circles/{circleId}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+
+
+	def get_chat_info(self, chatId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
