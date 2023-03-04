@@ -4,7 +4,7 @@ with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.4.1.1'
+ver = '1.1.6'
 
 setup(
 	name = "projectZ.py",
