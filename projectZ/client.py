@@ -76,6 +76,8 @@ class Client(Socket, CallBacks):
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
 	def Online(self):
+		if self.online_loop_active: return
+		
 		self.online_loop_active = True
 		Thread(target=self.online_loop).start()
 		return self.online_loop_active
@@ -218,26 +220,32 @@ class Client(Socket, CallBacks):
 
 		endpoint = '/biz/v1/activate-store'
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.ActivateShop(loads(response.text))
 
 	def wallet_info(self):
 
 		endpoint = '/biz/v1/wallet'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else  objects.WalletInfo(loads(response.text))
+
+
+
+
+
+
 
 	def my_nfts(self):
 
 		endpoint = '/biz/v1/nfts/count'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Nfts(loads(response.text))
 
 
 	def get_baners(self):
 
 		endpoint = '/v2/banners'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Baners(loads(response.text))
 
 	def get_circles(self, type: str = 'recommend', categoryId: int = 0, size: int = 10):
 
@@ -255,7 +263,7 @@ class Client(Socket, CallBacks):
 
 		endpoint = f'/v1/blogs?type={type}&size={size}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Blogs(loads(response.text))
 
 
 	def mark_as_read(self, chatId: int):
@@ -287,7 +295,7 @@ class Client(Socket, CallBacks):
 		
 		endpoint = f'/v1/chat/threads/{chatId}/mention-candidates?size={size}&queryWord={queryWord}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else  objects.MentionCandidates(loads(response.text))
 
 	def comment(self, message: str, userId: int = None, blogId: int = None, replyId: dict = None):
 
@@ -323,14 +331,14 @@ class Client(Socket, CallBacks):
 		data = dumps(data)
 		endpoint = f'/v1/comments'
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Comments(loads(response.text))
 
 
 	def get_comments(self, userId: int, type: int = 4, replyId: int= 0, size: int = 30, onlyPinned: int = 0):
 
 		endpoint = f'/v1/comments?parentId={userId}&parentType={type}&replyId={replyId}&size={size}&onlyPinned={onlyPinned}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Comments(loads(response.text))
 
 
 	def block(self, userId: int):
@@ -373,11 +381,63 @@ class Client(Socket, CallBacks):
 
 		endpoint = f'/v1/circles/{circleId}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CircleInfo(loads(response.text))
 
 
 	def get_chat_info(self, chatId: int):
 
 		endpoint = f'/v1/chat/threads/{chatId}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.ChatInfo(loads(response.text))
+
+	def follow(self, userId: int):
+
+		endpoint = f'/v1/users/membership/{userId}'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+	def unfollow(self, userId: int):
+
+		endpoint = f'/v1/users/membership/{userId}'
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+
+	def like(self, commentId: int = None, blogId: int = None, stickerId: int = 65956773102028339):
+
+		data = {
+			"createdTime": 0,
+			"stickerId": stickerId,
+			"count": 0,
+			"justAddTimeMs": 0
+		}
+
+		if commentId:
+			data['objectType'] = 3
+			data['objectId'] = commentId
+
+		elif blogId:
+			data['objectType'] = 2
+			data['objectId'] = blogId
+
+		else:
+			raise exceptions.WrongType()
+
+		data = dumps(data)
+		endpoint = f'/v1/reactions'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def unlike(self, commentId: int = None, blogId: int = None, stickerId: int = 65956773102028339):
+
+		if commentId:
+			endpoint = f'/v1/reactions?objectId={commentId}&objectType=3&stickerId={stickerId}'
+		elif blogId:
+			endpoint = f'/v1/reactions?objectId={blogId}&objectType=2&stickerId={stickerId}'
+		else:
+			raise exceptions.WrongType()
+
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code

@@ -38,7 +38,20 @@ class InvalidFile(Exception):
 		Exception.__init__(*args, **kwargs)
 
 
+class InvalidEmail(Exception):
+	def __init__(*args, **kwargs):
+		Exception.__init__(*args, **kwargs)
+
+
+class EmailNotRegistered(Exception):
+	def __init__(*args, **kwargs):
+		Exception.__init__(*args, **kwargs)
+
+
+
 errors = {
+	2009: EmailNotRegistered,
+	2022: InvalidEmail,
 	4604: InvalidLink,
 	2010: IncorrectPassword,
 	2038: AlreadyRegistered,
