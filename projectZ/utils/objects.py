@@ -282,11 +282,157 @@ class Blogs:
 
 
 
+class BlockedUsers:
+	def __init__(self, data: dict = {}):
+		self.json = data
+
+
+
+
 class Baners:
 	def __init__(self, data: dict = {}):
 		self.json = data
+		self.showAtTop = self.json.get("showAtTop", None)
+		self.banersList = list()
+		for baner in self.json.get("list", {}):
+			self.banersList.append(self.Baner(baner))
+
+
+	class Baner:
+		def __init__(self, data: dict = {}):
+			self.json=data
+			self.bannerId = self.json.get("bannerId", None)
+			self.scenario = self.json.get("scenario", None)
+			self.targetUrl = self.json.get("targetUrl", None)
+			self.status = self.json.get("status", None)
+			self.createdTime = self.json.get("createdTime", None)
+			self.creatorId = self.json.get("creatorUid", None)
+			self.position = self.json.get("position", None)
+			self.contentRegion = self.json.get("contentRegion", None)
+			self.note = self.json.get("note", None)
+			self.bannerImage = Media(self.json.get("bannerImage", {}))
+
+
 
 
 class Nfts:
 	def __init__(self, data: dict = {}):
 		self.json = data
+		self.count = self.json.get("count", None)
+
+
+class CirclesList:
+	def __init__(self, data: dict = {}):
+		self.json = data
+
+		pagination = self.json.get("pagination", {})
+		
+		self.totalPages = pagination.get("total", None)
+		self.nextPageToken = pagination.get("nextPageToken", None)
+		self.categoryList = list()
+		self.circlesList = list()
+
+		for circle in self.json.get("list", []):
+			self.circlesList.append(self.Circle(circle))
+
+		for category in self.json.get("list", []):
+			self.categoryList.append(self.Category(category))
+
+	class Circle:
+		def __init__(self, data: dict = {}):
+			self.json = data
+
+			sInfo = self.json.get("sInfo", {})
+
+			self.extensions = self.json.get("extensions", {})
+			self.status = self.json.get("status", None)
+			self.createdTime = self.json.get("createdTime", None)
+			self.contentRegion = self.json.get("contentRegion", None)
+			self.circleId = self.json.get("circleId", None)
+			self.categoryId = self.json.get("categoryId", None)
+			self.conceptId = self.json.get("conceptId", None)
+			self.socialId = self.json.get("socialId", None)
+			self.socialIdModified = self.json.get("socialIdModified", None)
+			self.updatedTime = self.json.get("updatedTime", None)
+			self.verifiedStatus = self.json.get("verifiedStatus", None)
+			self.name = self.json.get("name", None)
+			self.tagline = self.json.get("tagline", None)
+			self.language = self.json.get("language", None)
+			self.membersCount = self.json.get("membersCount", None)
+			self.dailyActiveUser = self.json.get("dailyActiveUser", None)
+			self.dailyNewPostCount = self.json.get("dailyNewPostCount", None)
+			self.privacy = self.json.get("privacy", None)
+			self.joinPermission = self.json.get("joinPermission", None)
+			self.visibility = self.json.get("visibility", None)
+			self.discoverability = self.json.get("discoverability", None)
+			self.themeColor = self.json.get("themeColor", None)
+			self.joinedStatus = self.json.get("joinedStatus", None)
+			self.uid = self.json.get("uid", None)
+			self.rootFolderId = self.json.get("rootFolderId", None)
+			self.recallType = sInfo.get("recallType", None)
+			self.background = Media(self.json.get("background", {}))
+
+			self.icon = Media(self.json.get("icon", {}))
+			self.cover = Media(self.json.get("cover", {}))
+			self.circleIcon = Media(self.json.get("circleIcon", {}))
+			self.tagList = list()
+
+			for tag in self.json.get("tagList", []):
+				self.tagList.append(self.Tag(tag))
+
+		class Tag:
+			def __init__(self, data: dict = {}):
+				self.json = data
+
+				style = self.json.get("style", {})
+
+				self.tagId = self.json.get("tagId", None)
+				self.tagName = self.json.get("tagName", None)
+				self.source = self.json.get("source", None)
+				self.status = self.json.get("status", None)
+				self.order = self.json.get("order", None)
+				self.backgroundColor = style.get("backgroundColor", None)
+				self.textColor = style.get("textColor", None)
+				self.borderColor = style.get("borderColor", None)
+				self.solidColor = style.get("solidColor", None)
+
+
+
+	class Category:
+		def __init__(self, data: dict = {}):
+			self.json = data
+
+			sticker = self.json.get("sticker", {})
+			tagInfo = self.json.get("tagInfo", {})
+			tagStyle = tagInfo.get("style", {})
+
+			self.categoryId = self.json.get("categoryId", None)
+			self.stickerId = self.json.get("stickerId", None)
+			self.name = self.json.get("name", None)
+			self.title = self.json.get("title", None)
+			self.lowerCaseName = self.json.get("lowerCaseName", None)
+			self.contentRegion = self.json.get("contentRegion", None)
+			self.status = self.json.get("status", None)
+			self.objectType = self.json.get("objectType", None)
+			self.score = self.json.get("score", None)
+			self.createdTime = self.json.get("createdTime", None)
+			self.conceptId = self.json.get("conceptId", None)
+			self.conceptName = self.json.get("conceptName", None)
+			self.categoryConcept = self.json.get("createdTime", None)
+			self.extensions = self.json.get("extensions", {})
+			self.stickerId = sticker.get("stickerId", None)
+			self.stickerName = sticker.get("name", None)
+			self.stickerMedia = Media(sticker.get("media", {}))
+			self.tagId = tagInfo.get("tagId", None)
+			self.tagName = tagInfo.get("tagName", None)
+			self.tagTitle = tagInfo.get("title", None)
+			self.tagLowerCaseName = tagInfo.get("lowerCaseName", None)
+			self.languageCode = tagInfo.get("languageCode", None)
+			self.tagStatus = tagInfo.get("status", None)
+			self.officialVerified = tagInfo.get("officialVerified", None)
+			self.tagType = tagInfo.get("tagType", None)
+			self.tagCreatedTime = tagInfo.get("createdTime", None)
+			self.tagBackgroundColor = tagStyle.get("backgroundColor", None)
+			self.tagTextColor = tagStyle.get("textColor", None)
+			self.tagBorderColor = tagStyle.get("borderColor", None)
+			self.tagSolidColor = tagStyle.get("solidColor", None)

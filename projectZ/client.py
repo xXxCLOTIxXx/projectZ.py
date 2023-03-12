@@ -7,7 +7,7 @@ from requests import Session
 from random import randint
 from sys import maxsize
 from uuid import UUID
-from typing import BinaryIO
+from typing import BinaryIO, Union
 from binascii import hexlify
 from os import urandom
 from threading import Thread
@@ -37,11 +37,11 @@ class Client(Socket, CallBacks):
 		return head
 
 	def set_proxies(self, proxy = None):
-		if type(proxy) == dict:
+		if isinstance(proxy, dict):
 			self.proxies = proxy
-		elif type(proxy) == str:
+		elif isinstance(proxy, str):
 			self.proxies={"http": proxy, "https": proxy}
-		elif proxy == None:
+		elif proxy is None:
 			self.proxies=None
 		else:
 			raise exceptions.WrongType(type(proxy))
@@ -251,13 +251,13 @@ class Client(Socket, CallBacks):
 
 		endpoint = f'/v1/circles?type={type}&categoryId={categoryId}&size={size}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CirclesList(loads(response.text))
 
 	def get_blocked_users(self):
 
 		endpoint = '/v1/users/block-uids'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.BlockedUsers(loads(response.text))
 
 	def get_blogs(self, type: str = 'recommend', size: int = 10):
 
@@ -441,3 +441,22 @@ class Client(Socket, CallBacks):
 
 		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def invite_to_chat(self, userId: Union[int, list], chatId: int):
+		if isinstance(userId, int): userIds = [userId]
+		elif isinstance(userId, list): userIds = userId
+		else:raise exceptions.WrongType()
+
+		data = dumps({"invitedUids": userIds})
+
+		endpoint = f'/v1/chat/threads/{chatId}/members-invite'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+	def get_follow(self, userId: int, type: str = "followingOther", size: int = 10):
+		#FIX IT
+
+		endpoint = f'/v1/users/membership/{userId}?type={type}&size={size}&threadId=0&sortType=0'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
