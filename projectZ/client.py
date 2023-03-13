@@ -24,7 +24,7 @@ class Client(Socket, CallBacks):
 		self.country_code = country_code
 		self.time_zone = time_zone
 
-		Socket.__init__(self, self, sock_trace=sock_trace, debug=socket_debug)
+		Socket.__init__(self, headers=self.parse_headers, sock_trace=sock_trace, debug=socket_debug)
 		CallBacks.__init__(self)
 
 
@@ -36,7 +36,7 @@ class Client(Socket, CallBacks):
 		head["HJTRFS"] = gen.signature(path=endpoint, headers=head, body=data or bytes())
 		return head
 
-	def set_proxies(self, proxy = None):
+	def set_proxies(self, proxy: Union[dict, str, None] = None):
 		if isinstance(proxy, dict):
 			self.proxies = proxy
 		elif isinstance(proxy, str):
@@ -145,7 +145,7 @@ class Client(Socket, CallBacks):
 		resp = self.send(t=1, data=data, threadId=chatId)
 		return resp
 
-	def get_verify_code(self, email: str):
+	def send_verify_code(self, email: str):
 
 		data = dumps({
 			"authType": 1,
@@ -229,11 +229,6 @@ class Client(Socket, CallBacks):
 		return exceptions.CheckException(response.text) if response.status_code != 200 else  objects.WalletInfo(loads(response.text))
 
 
-
-
-
-
-
 	def my_nfts(self):
 
 		endpoint = '/biz/v1/nfts/count'
@@ -276,20 +271,20 @@ class Client(Socket, CallBacks):
 
 		endpoint=f'/v1/chat/threads/{chatId}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
 
 	def get_online_chat_members(self, chatId: int):
 
 		endpoint=f'/v1/chat/threads/{chatId}/online-members'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
 
 
 	def get_chat_messages(self, chatId: int, size: int = 10):
 
 		endpoint=f'/v1/chat/threads/{chatId}/messages?size={size}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else response.text
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
 
 	def get_mention_candidates(self, chatId: int, size: int = 10, queryWord: str = ''):
 		
@@ -381,7 +376,7 @@ class Client(Socket, CallBacks):
 
 		endpoint = f'/v1/circles/{circleId}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CircleInfo(loads(response.text))
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Circle(loads(response.text))
 
 
 	def get_chat_info(self, chatId: int):
@@ -454,9 +449,14 @@ class Client(Socket, CallBacks):
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
-	def get_follow(self, userId: int, type: str = "followingOther", size: int = 10):
-		#FIX IT
+	def get_my_invitation_code(self):
 
-		endpoint = f'/v1/users/membership/{userId}?type={type}&size={size}&threadId=0&sortType=0'
+		endpoint = f'/v1/users/multi-invitation-code'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.invitationCode(loads(response.text))
+
+	def get_circles_members(self, circleId: int, size: int = 30, type :str = 'normal', pageToken: str = None):
+
+		endpoint = f'/v1/circles/{circleId}/members?type={type}&size={size}&isExcludeManger=false{f"&pageToken={pageToken}" if pageToken else ""}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CirclesMembers(loads(response.text))

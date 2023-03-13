@@ -7,12 +7,12 @@ from json import dumps, loads
 from .utils import objects
 
 class Socket:
-	def __init__(self, client, debug: bool = False, sock_trace: bool = False):
+	def __init__(self, headers, debug: bool = False, sock_trace: bool = False):
 		self.socket_url = "wss://ws.projz.com"
 		self.socket = None
 		self.debug=debug
 
-		self.client = client
+		self.headers = headers
 		self.active = False
 		self.online_loop_active = False
 		self.socket_thread = None
@@ -42,7 +42,7 @@ class Socket:
 
 			self.socket = WebSocketApp(
 				f"{self.socket_url}/v1/chat/ws",
-				header = self.client.parse_headers(endpoint='/v1/chat/ws'),
+				header = self.headers(endpoint='/v1/chat/ws'),
 				on_message=self.resolve
 			)
 			self.socket_thread = Thread(target=self.socket.run_forever)
