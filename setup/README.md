@@ -38,3 +38,19 @@ import projectZ
 client = projectZ.Client()
 client.login(email='email', password='password')
 ```
+
+<h1 align="center">Async login example</h1>
+
+```python
+import projectZ
+import asyncio
+
+
+client = projectZ.AsyncClient()
+async def main():
+	await client.login(email='email', password='password')
+
+if __name__ == '__main__':
+	loop = asyncio.get_event_loop()
+	loop.run_until_complete(main())
+```

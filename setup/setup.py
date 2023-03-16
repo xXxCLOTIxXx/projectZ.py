@@ -4,7 +4,7 @@ with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.6'
+ver = '1.1.6.3'
 
 setup(
 	name = "projectZ.py",
@@ -27,14 +27,16 @@ setup(
 		"python3",
 		"python3.x",
 		"xsarz",
-		"official"
+		"official",
+		"async",
+		"sync"
 	],
 	install_requires = [
-		"colored",
-		"requests",
 		"websocket-client",
-		"ffmpeg"
-
+		"requests",
+		"aiohttp",
+		"python-magic-bin==0.4.14",
+		"aiofiles",
 	],
 	packages = find_packages()
 )
