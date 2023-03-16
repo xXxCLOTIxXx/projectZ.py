@@ -48,6 +48,10 @@ class EmailNotRegistered(Exception):
 		Exception.__init__(*args, **kwargs)
 
 
+class TooManyRequests(Exception):
+	def __init__(*args, **kwargs):
+		Exception.__init__(*args, **kwargs)
+
 
 errors = {
 	2009: EmailNotRegistered,
@@ -55,6 +59,7 @@ errors = {
 	4604: InvalidLink,
 	2010: IncorrectPassword,
 	2038: AlreadyRegistered,
+	6107: TooManyRequests,
 	7008: BadMedia,
 	1000004: NoWalletError
 }

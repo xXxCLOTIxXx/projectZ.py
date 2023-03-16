@@ -6,7 +6,9 @@ Enjoy using!
 
 from .utils import exceptions, generator, headers, objects
 from .client import Client
+from .async_client import AsyncClient
 from .socket import Socket
+from .async_socket import AsyncSocket
 
 from os import system as s
 from colored import fore
@@ -17,7 +19,7 @@ __title__ = 'projectZ.py'
 __author__ = 'Xsarz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Xsarz'
-__version__ = '1.1.6.2'
+__version__ = '1.1.6.3'
 
 
 __newest__ = loads(get("https://pypi.org/pypi/projectZ.py/json").text)["info"]["version"]

@@ -64,6 +64,8 @@ class Socket:
 			self.socket.close()
 			self.active = False
 			self.socket_thread = None
+			if self.debug:
+				print(f"[socket][close] Socket closed")
 		except Exception as e:
 			if self.debug:
 				print(f"[socket][close] Error while closing Socket : {e}")
@@ -102,7 +104,7 @@ class Socket:
 		if data:d['msg'] = data
 		if self.debug is True:
 			print(f"[socket][send] Sending Data : {d}")
-		self.socket.send(dumps(d))
+		return self.socket.send(dumps(d))
 
 
 class CallBacks:
@@ -217,5 +219,4 @@ class CallBacks:
 	def on_user_typing(self, data): self.call(type='on_user_typing', data=data)
 	def on_chat_activity_type(self, data): self.call(type='on_chat_activity_type', data=data)
 	def on_voice_call_not_answered(self, data): self.call(type='on_voice_call_not_answered', data=data)
-
 	def on_all(self, data): self.call(type='on_all', data=data)
