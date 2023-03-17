@@ -9,8 +9,9 @@ from random import randint
 from aiohttp import ClientSession, MultipartWriter
 from asyncio import get_event_loop, new_event_loop, create_task
 from magic import from_buffer
-
+from io import BytesIO
 from aiofiles.threadpool.binary import AsyncBufferedReader
+from typing import Union, Optional
 
 gen = Generator()
 
@@ -51,18 +52,20 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		return head
 
 
-	async def upload_media(self, file: AsyncBufferedReader, target: int = 1):
-		#TODO 
+	async def upload_media(self, file: AsyncBufferedReader, target: int = 1, returnType: str = 'object'):
+
 		duration = 0
-		content = await file.read()
+		file_content = await file.read()
+		content = BytesIO()
 		writer = MultipartWriter()
-		part = writer.append(content, {"Content-Type": from_buffer(content, mime=True)})
+		part = writer.append(file_content, {"Content-Type": from_buffer(file_content, mime=True)})
 		part.set_content_disposition("form-data", name="media", filename=file.name)
-
+		await writer.write(objects.CopyToBufferWriter(content))
 		endpoint = f"/v1/media/upload?target={target}&duration={duration}"
-
-		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, content_type=f"multipart/form-data; boundary={writer.boundary}"), data=writer) as response:
-			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, content_type=f"multipart/form-data; boundary={writer.boundary}", data=content.getvalue()), data=content.getvalue()) as response:
+			if response.status != 200:return exceptions.CheckException(await response.text())
+			else:
+				return objects.Media(loads(await response.text())) if returnType == 'object' else loads(await response.text())
 
 
 	async def login(self, email: str, password: str):
@@ -92,7 +95,6 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 				return response.status
 
 	async def Online(self):
-		#TODO 
 		if self.online_loop_active: return
 		self.online_loop_active = create_task(self.online_loop())
 		return self.online_loop_active
@@ -149,14 +151,12 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else  objects.Thread(loads(await response.text()))
 
 
-	async def send_message(self, chatId: int, message: str, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None):
-		#TODO 
-		seqId = randint(0, maxsize)
+	async def send_message(self, chatId: int, message: str, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
 		data = {
 			"type": message_type,
 			"threadId": chatId,
 			"uid": self.profile.uid,
-			"seqId": seqId,
+			"seqId": randint(0, maxsize),
 			"extensions": {}
 		}
 		data["content"] = message
@@ -164,5 +164,62 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		if poll_id: data["extensions"]["pollId"] = poll_id
 		if dice_id: data["extensions"]["diceId"] = dice_id
 
-		resp = await self.send(t=1, data=data, threadId=chatId, seqId=seqId)
+		resp = await self.send(t=1, data=data, threadId=chatId)
 		return resp
+
+
+
+	async def send_verify_code(self, email: str, country_code: str = None):
+		data = dumps({
+			"authType": 1,
+			"purpose": 1,
+			"email": email,
+			"password": "",
+			"phoneNumber": "",
+			"securityCode": "",
+			"invitationCode": "",
+			"secret": "",
+			"gender": 0,
+			"birthday": "1990-01-01",
+			"requestToBeReactivated": False,
+			"countryCode": country_code if country_code else self.country_code,
+			"suggestedCountryCode": country_code.upper() if country_code else self.country_code.upper(),
+			"ignoresDisabled": True,
+			"rawDeviceIdThree": gen.generate_device_id_three()
+		})
+		
+		endpoint = '/v1/auth/request-security-validation'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+	async def register(self, email: str, password: str, code: str, icon: Union[AsyncBufferedReader, objects.Media], country_code: str = None, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'projectZ', gender: int = 100, birthday: str = '1990-01-01'):
+		data = dumps({
+			"authType": 1,
+			"purpose": 1,
+			"email": email,
+			"password": password,
+			"securityCode": code,
+			"invitationCode": invitation_code or "",
+			"nickname": nickname,
+			"tagLine": tag_line,
+			"icon": icon.json if isinstance(icon, objects.Media) else await self.upload_media(icon, returnType='dict'),
+			"nameCardBackground": None,
+			"gender": gender,
+			"birthday": birthday,
+			"requestToBeReactivated": False,
+			"countryCode": country_code if country_code else self.country_code,
+			"suggestedCountryCode": country_code.upper() if country_code else self.country_code.upper(),
+			"ignoresDisabled": True,
+			"rawDeviceIdThree": gen.generate_device_id_three()
+		})
+
+		endpoint = '/v1/auth/register'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def visit(self, userId):
+
+		endpoint = f'/v1/users/profile/{userId}/visit'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status

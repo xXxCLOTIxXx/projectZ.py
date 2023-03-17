@@ -74,8 +74,7 @@ class AsyncSocket:
 		if data:d['msg'] = data
 		if self.debug is True:
 			print(f"[socket][send] Sending Data : {d}")
-		await self.connection.send_json(dumps(d))
-
+		await self.connection.send_str(dumps(d))
 
 
 class AsyncCallBacks:

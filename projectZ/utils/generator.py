@@ -35,7 +35,7 @@ class Generator:
 		mac = HMAC(key=self.SIG_KEY, msg=path.encode("utf-8"), digestmod=sha256)
 		for header in [headers[signable] for signable in self.get_signable_header_keys() if signable in headers]:
 			mac.update(header.encode("utf-8"))
-		if body: mac.update(body.encode("utf-8"))
+		if body: mac.update(body if isinstance(body, bytes) else body.encode("utf-8"))
 		return b64encode(self.prefix + mac.digest()).decode("utf-8")
 
 	def deviceId(self, installation_id: str = None):

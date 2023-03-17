@@ -145,7 +145,7 @@ class Client(Socket, CallBacks):
 		resp = self.send(t=1, data=data, threadId=chatId)
 		return resp
 
-	def send_verify_code(self, email: str):
+	def send_verify_code(self, email: str, country_code: str = None):
 
 		data = dumps({
 			"authType": 1,
@@ -159,8 +159,8 @@ class Client(Socket, CallBacks):
 			"gender": 0,
 			"birthday": "1990-01-01",
 			"requestToBeReactivated": False,
-			"countryCode": self.country_code,
-			"suggestedCountryCode": self.country_code.upper(),
+			"countryCode": country_code if country_code else self.country_code,
+			"suggestedCountryCode": country_code.upper() if country_code else self.country_code.upper(),
 			"ignoresDisabled": True,
 			"rawDeviceIdThree": gen.generate_device_id_three()
 		})
@@ -169,7 +169,7 @@ class Client(Socket, CallBacks):
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
 
-	def register(self, email: str, password: str, code: str, icon: BinaryIO, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'XsarzBot', gender: int = 100, birthday: str = '1990-01-01'):
+	def register(self, email: str, password: str, code: str, icon: BinaryIO, country_code: str = None, invitation_code: str = None, nickname: str = 'XsarzyBest', tag_line: str = 'projectZ', gender: int = 100, birthday: str = '1990-01-01'):
 
 		data = dumps({
 			"authType": 1,
@@ -185,8 +185,8 @@ class Client(Socket, CallBacks):
 			"gender": gender,
 			"birthday": birthday,
 			"requestToBeReactivated": False,
-			"countryCode": self.country_code,
-			"suggestedCountryCode": self.country_code.upper(),
+			"countryCode": country_code if country_code else self.country_code,
+			"suggestedCountryCode": country_code.upper() if country_code else self.country_code.upper(),
 			"ignoresDisabled": True,
 			"rawDeviceIdThree": gen.generate_device_id_three()
 		})
