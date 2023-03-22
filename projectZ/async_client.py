@@ -52,9 +52,8 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		return head
 
 
-	async def upload_media(self, file: AsyncBufferedReader, target: int = 1, returnType: str = 'object'):
+	async def upload_media(self, file: AsyncBufferedReader, target: int = 1, returnType: str = 'object', duration: int = 0):
 
-		duration = 0
 		file_content = await file.read()
 		content = BytesIO()
 		writer = MultipartWriter()
@@ -151,15 +150,22 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else  objects.Thread(loads(await response.text()))
 
 
-	async def send_message(self, chatId: int, message: str, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
+	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
 		data = {
-			"type": message_type,
 			"threadId": chatId,
 			"uid": self.profile.uid,
 			"seqId": randint(0, maxsize),
 			"extensions": {}
 		}
-		data["content"] = message
+		if message:
+			data["content"]=message
+			data["type"]=message_type
+		elif file:
+			data["type"]=2
+			data["media"] = await self.upload_media(file=file, target=8, returnType='dict')
+		else:
+			raise exceptions.WrongType('Specify the "message" or "file" argument')
+
 		if reply_to: data["extensions"]["replyMessage"] = reply_to
 		if poll_id: data["extensions"]["pollId"] = poll_id
 		if dice_id: data["extensions"]["diceId"] = dice_id
@@ -223,3 +229,154 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		endpoint = f'/v1/users/profile/{userId}/visit'
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
 			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def add_to_favorites(self, userId: Union[list, int]):
+
+		userIds = userId if isinstance(userId, list) else [userId]
+		data = dumps({"targetUids": userIds})
+		endpoint = '/v1/users/membership/favorites'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def report(self, userId: int, message: str, images: Union[AsyncBufferedReader, list[AsyncBufferedReader]], flagType: int = 100):
+
+		media = list()
+		if isinstance(images, AsyncBufferedReader):images=[images]
+		elif isinstance(images, list):pass
+		else:raise exceptions.WrongType()
+		data = {
+			"objectId": userId,
+			"objectType": 4,
+			"flagType": flagType,
+			"message": message,
+		}
+		for image in images:
+			media.append(await self.upload_media(image, returnType='dict'))
+		data["mediaList"] = media
+
+
+		data = dumps(data)
+		endpoint = f'/v1/flags'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def delete_message(self, chatId: int, messageId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}/messages/{messageId}'
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+	async def kick(self, chatId: int, userId: int, denyEntry: bool = False, removeContent: bool = False):
+		
+		endpoint = f"/v1/chat/threads/{chatId}/members/{userId}?block={str(denyEntry).lower()}&removeContent={str(removeContent).lower()}"
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def pin_chat(self, chatId):
+
+		endpoint = f'/v1/chat/threads/{chatId}/pin'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+	async def apply_bubble(self, chatId: int, bubbleColor: str):
+
+		data = dumps({"threadId": chatId, "bubbleColor": bubbleColor})
+		endpoint = f'/v1/chat/apply-bubble'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def invite_to_co_host(self, chatId: int, userId: Union[list, int]):
+		#TODO
+		if isinstance(userId, int): userIds = [userId]
+		elif isinstance(userId, list): userIds = userId
+		else:raise exceptions.WrongType('Specify the "message" or "file" argument')
+		data = dumps({"coHostUids": userIds})
+		endpoint = f"/v1/chat/threads/{chatId}/invite-co-host"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def invite_to_host(self, chatId: int, userId: int):
+		#TODO
+		endpoint = f"/v1/chat/threads/{chatId}/invite-host/{userId}"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def accept_co_host(self, chatId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}/accept-as-co-host"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def accept_host(self, chatId: int):
+		
+		endpoint = f"/v1/chat/threads/{chatId}/accept-as-host"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def auto_offline(self, chatId: int, switch: bool = False):
+
+		endpoint = f"/v1/chat/threads/{chatId}/auto-offline/{'disable' if switch == False else 'enable'}"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def check_in(self):
+		endpoint = f"/v1/users/check-in"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			response = exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+		orderId = response.get("orderId", None)
+
+		await self.claim_transfer_orders(orderId=orderId)
+
+		return response
+
+	async def claim_transfer_orders(self, orderId: int):
+
+		endpoint = f"/biz/v3/transfer-orders/{orderId}/claim"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def claim_gift_boxes(self, orderId: int):
+		endpoint = f"/v1/gift-boxes/{orderId}/claim"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def get_transfer_order_info(self, orderId: int):
+
+		endpoint = f"/biz/v1/transfer-orders/{orderId}"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+	async def send_coins(self, wallet_password: int, userId: int, amount: int, title: str = "Всего Наилучшего!"):
+
+		data = dumps({
+			"toObjectId": userId,
+			"amount": f"{amount}000000000000000000",
+			"paymentPassword": str(wallet_password),
+			"toObjectType": 4,
+			"currencyType": 100,
+			"title": title
+		})
+
+		endpoint = f"/biz/v1/gift-boxes"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def online_chat_status(self, chatId: int, online: bool = True):
+
+		data = dumps({"partyOnlineStatus": 1 if online else 2})
+		endpoint = f"/v1/chat/threads/{chatId}/party-online-status"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())

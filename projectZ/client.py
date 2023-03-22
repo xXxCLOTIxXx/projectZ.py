@@ -460,3 +460,117 @@ class Client(Socket, CallBacks):
 		endpoint = f'/v1/circles/{circleId}/members?type={type}&size={size}&isExcludeManger=false{f"&pageToken={pageToken}" if pageToken else ""}'
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CirclesMembers(loads(response.text))
+
+
+	#not tested----------
+
+	def add_to_favorites(self, userId: Union[list, int]):
+
+		userIds = userId if isinstance(userId, list) else [userId]
+		data = dumps({"targetUids": userIds})
+		endpoint = '/v1/users/membership/favorites'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+
+	def delete_message(self, chatId: int, messageId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}/messages/{messageId}'
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+	def kick(self, chatId: int, userId: int, denyEntry: bool = False, removeContent: bool = False):
+		
+		endpoint = f"/v1/chat/threads/{chatId}/members/{userId}?block={str(denyEntry).lower()}&removeContent={str(removeContent).lower()}"
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def pin_chat(self, chatId):
+
+		endpoint = f'/v1/chat/threads/{chatId}/pin'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def apply_bubble(self, chatId: int, bubbleColor: str):
+
+		data = dumps({"threadId": chatId, "bubbleColor": bubbleColor})
+		endpoint = f'/v1/chat/apply-bubble'
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def accept_co_host(self, chatId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}/accept-as-co-host"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def accept_host(self, chatId: int):
+		
+		endpoint = f"/v1/chat/threads/{chatId}/accept-as-host"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def auto_offline(self, chatId: int, switch: bool = False):
+
+		endpoint = f"/v1/chat/threads/{chatId}/auto-offline/{'disable' if switch == False else 'enable'}"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def check_in(self):
+		endpoint = f"/v1/users/check-in"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		response = exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+		orderId = response.get("orderId", None)
+		self.claim_transfer_orders(orderId=orderId)
+
+		return response
+
+	def claim_transfer_orders(self, orderId: int):
+
+		endpoint = f"/biz/v3/transfer-orders/{orderId}/claim"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def claim_gift_boxes(self, orderId: int):
+		endpoint = f"/v1/gift-boxes/{orderId}/claim"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+	def get_transfer_order_info(self, orderId: int):
+
+		endpoint = f"/biz/v1/transfer-orders/{orderId}"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+	def send_coins(self, wallet_password: int, userId: int, amount: int, title: str = "Всего Наилучшего!"):
+
+		data = dumps({
+			"toObjectId": userId,
+			"amount": f"{amount}000000000000000000",
+			"paymentPassword": str(wallet_password),
+			"toObjectType": 4,
+			"currencyType": 100,
+			"title": title
+		})
+
+		endpoint = f"/biz/v1/gift-boxes"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+	def online_chat_status(self, chatId: int, online: bool = True):
+
+		data = dumps({"partyOnlineStatus": 1 if online else 2})
+		endpoint = f"/v1/chat/threads/{chatId}/party-online-status"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)

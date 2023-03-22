@@ -21,7 +21,7 @@ class AsyncSocket:
 			msg = await self.connection.receive()
 			data = loads(msg.data)
 			await self.on_all(data)
-			await self.methods.get(data['t'])(data)
+			await self.methods.get(data['msg']['type'])(data)
 
 
 	async def connect(self):

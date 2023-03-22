@@ -33,7 +33,7 @@ class Socket:
 		except:
 			pass
 		self.on_all(data)
-		self.methods.get(data['t'])(data)
+		self.methods.get(data['msg']['type'])(data)
 
 	def connect(self):
 		try:
@@ -85,9 +85,6 @@ class Socket:
 		while self.online_loop_active:
 			try:
 				self.send()
-			except WSexceptions.WebSocketConnectionClosedException:
-				sleep(1.5)
-				continue
 			except Exception as e:
 				if self.debug:
 					print('[socket][_online_loop][error] ', e)
@@ -104,7 +101,11 @@ class Socket:
 		if data:d['msg'] = data
 		if self.debug is True:
 			print(f"[socket][send] Sending Data : {d}")
-		return self.socket.send(dumps(d))
+		
+		try:return self.socket.send(dumps(d))
+		except WSexceptions.WebSocketConnectionClosedException:
+			if self.debug is True:
+				print(f"[socket][send][error] Socket not available")
 
 
 class CallBacks:
