@@ -8,7 +8,6 @@ from sys import maxsize
 from random import randint
 from aiohttp import ClientSession, MultipartWriter
 from asyncio import get_event_loop, new_event_loop, create_task
-from magic import from_buffer
 from io import BytesIO
 from aiofiles.threadpool.binary import AsyncBufferedReader
 from typing import Union, Optional
@@ -52,12 +51,18 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		return head
 
 
-	async def upload_media(self, file: AsyncBufferedReader, target: int = 1, returnType: str = 'object', duration: int = 0):
+	async def upload_media(self, file: AsyncBufferedReader, fileType: str, target: int = 1, returnType: str = 'object', duration: int = 0):
+
+		if fileType == "audio":
+			t = "audio/aac"
+		elif fileType == "image":
+			t = "image/jpg"
+		else: raise exceptions.WrongType(fileType)
 
 		file_content = await file.read()
 		content = BytesIO()
 		writer = MultipartWriter()
-		part = writer.append(file_content, {"Content-Type": from_buffer(file_content, mime=True)})
+		part = writer.append(file_content, {"Content-Type": t})
 		part.set_content_disposition("form-data", name="media", filename=file.name)
 		await writer.write(objects.CopyToBufferWriter(content))
 		endpoint = f"/v1/media/upload?target={target}&duration={duration}"
@@ -105,7 +110,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		return self.online_loop_active
 
 
-	async def join_chat(self, chatId: int) -> None:
+	async def join_chat(self, chatId: int):
 
 		endpoint = f'/v1/chat/threads/{chatId}/members'
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
@@ -113,7 +118,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 
 
 
-	async def leave_chat(self, chatId: int) -> None:
+	async def leave_chat(self, chatId: int):
 
 		endpoint = f'/v1/chat/threads/{chatId}/members'
 		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
@@ -150,7 +155,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else  objects.Thread(loads(await response.text()))
 
 
-	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
+	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, fileType: str = None, file_duration: int = None, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
 		data = {
 			"threadId": chatId,
 			"uid": self.profile.uid,
@@ -161,8 +166,8 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			data["content"]=message
 			data["type"]=message_type
 		elif file:
-			data["type"]=2
-			data["media"] = await self.upload_media(file=file, target=8, returnType='dict')
+			data["type"]= 2 if fileType == "image" else 6
+			data["media"] = await self.upload_media(file=file, fileType=fileType, target= 8 if fileType == "image" else 10, returnType='dict', duration=file_duration*1000 if file_duration else 0)
 		else:
 			raise exceptions.WrongType('Specify the "message" or "file" argument')
 
@@ -208,7 +213,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			"invitationCode": invitation_code or "",
 			"nickname": nickname,
 			"tagLine": tag_line,
-			"icon": icon.json if isinstance(icon, objects.Media) else await self.upload_media(icon, returnType='dict'),
+			"icon": icon.json if isinstance(icon, objects.Media) else await self.upload_media(icon, returnType='dict', fileType="image"),
 			"nameCardBackground": None,
 			"gender": gender,
 			"birthday": birthday,
@@ -253,7 +258,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			"message": message,
 		}
 		for image in images:
-			media.append(await self.upload_media(image, returnType='dict'))
+			media.append(await self.upload_media(image, returnType='dict', fileType="image"))
 		data["mediaList"] = media
 
 
