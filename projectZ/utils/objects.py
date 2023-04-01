@@ -118,6 +118,10 @@ class UserProfile:
 		self.followMeStatus = self.json.get('followMeStatus', None)
 		self.followedByMeStatus = self.json.get('followedByMeStatus', None)
 		self.followedByMeStatusV2 = self.json.get('followedByMeStatusV2', None)
+		self.language = self.json.get('language', None)
+		self.bio = self.json.get('bio', None)
+		self.nameCardBackground = Media(self.json.get('nameCardBackground', {}))
+		self.background = Media(self.json.get('background', {}))
 
 
 	class UserMood:
@@ -305,7 +309,7 @@ class ChatInfo:
 		self.type = self.json.get('type', None)
 		self.hostId = self.json.get('hostUid', None)
 		self.title = self.json.get('title', None)
-		self.icon = self.json.get('icon', None)
+		self.icon = Media(self.json.get('icon', {}))
 		self.content = self.json.get('content', None)
 		self.latestMessageId = self.json.get('latestMessageId', None)
 		self.membersCount = self.json.get('membersCount', None)
@@ -332,7 +336,7 @@ class ChatInfo:
 		self.membersList = list()
 
 		for member in self.json.get('membersSummary', []):
-			self.membersList.append(self.UserProfile(member))
+			self.membersList.append(UserProfile(member))
 
 
 	class CurrentMemberInfo:

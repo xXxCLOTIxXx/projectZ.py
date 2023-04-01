@@ -5,6 +5,7 @@ from threading import Thread
 from time import sleep
 from json import dumps, loads
 from .utils import objects
+from traceback import format_exc
 
 class Socket:
 	def __init__(self, headers, debug: bool = False, sock_trace: bool = False):
@@ -173,8 +174,10 @@ class CallBacks:
 	def call(self, type, data):
 		if type in self.handlers:
 			for handler in self.handlers[type]:
-				handler(objects.Event(data))
-
+				try:handler(objects.Event(data))
+				except:
+					if self.debug:
+						print("[event][call][error]Error calling your function:\n", format_exc(),'\n')
 
 	def on_text_message(self, data): self.call(type='on_text_message', data=data)
 	def on_image_message(self, data): self.call(type='on_image_message', data=data)

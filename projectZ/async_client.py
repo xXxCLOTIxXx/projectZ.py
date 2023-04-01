@@ -385,3 +385,209 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		endpoint = f"/v1/chat/threads/{chatId}/party-online-status"
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
 			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def get_user_info(self, userId: int):
+
+		endpoint = f'/v1/users/profile/{userId}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.UserProfile(loads(await response.text()))
+
+
+
+	async def get_circles(self, type: str = 'recommend', categoryId: int = 0, size: int = 10):
+
+		endpoint = f'/v1/circles?type={type}&categoryId={categoryId}&size={size}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.CirclesList(loads(await response.text()))
+
+
+	async def get_blocked_users(self):
+
+		endpoint = '/v1/users/block-uids'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.BlockedUsers(loads(await response.text()))
+
+
+	async def get_blogs(self, type: str = 'recommend', size: int = 10):
+
+		endpoint = f'/v1/blogs?type={type}&size={size}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Blogs(loads(await response.text()))
+
+
+	async def mark_as_read(self, chatId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}/mark-as-read'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+	async def get_chat_threads(self, chatId: int):
+
+		endpoint=f'/v1/chat/threads/{chatId}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+	async def get_online_chat_members(self, chatId: int):
+
+		endpoint=f'/v1/chat/threads/{chatId}/online-members'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def get_chat_messages(self, chatId: int, size: int = 10):
+
+		endpoint=f'/v1/chat/threads/{chatId}/messages?size={size}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+	async def get_mention_candidates(self, chatId: int, size: int = 10, queryWord: str = ''):
+		
+		endpoint = f'/v1/chat/threads/{chatId}/mention-candidates?size={size}&queryWord={queryWord}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.MentionCandidates(loads(await response.text()))
+
+
+	async def get_comments(self, userId: int, type: int = 4, replyId: int= 0, size: int = 30, onlyPinned: int = 0):
+
+		endpoint = f'/v1/comments?parentId={userId}&parentType={type}&replyId={replyId}&size={size}&onlyPinned={onlyPinned}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Comments(loads(await response.text()))
+
+
+	async def block(self, userId: int):
+
+		endpoint = f'/v1/users/block/{userId}'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def unblock(self, userId: int):
+
+		endpoint = f'/v1/users/block/{userId}'
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def accept_chat_invitation(self, chatId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}/accept-invitation'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+	async def join_circle(self, circleId):
+		data = dumps({"joinMethod": 1})
+
+		endpoint = f'/v1/circles/{circleId}/members'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def leave_circle(self, circleId):
+
+		endpoint = f'/v1/circles/{circleId}/members'
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def get_circle_info(self, circleId: int):
+
+		endpoint = f'/v1/circles/{circleId}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Circle(loads(await response.text()))
+
+
+	async def get_chat_info(self, chatId: int):
+
+		endpoint = f'/v1/chat/threads/{chatId}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.ChatInfo(loads(await response.text()))
+
+
+	async def follow(self, userId: int):
+
+		endpoint = f'/v1/users/membership/{userId}'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def unfollow(self, userId: int):
+
+		endpoint = f'/v1/users/membership/{userId}'
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def like(self, commentId: int = None, blogId: int = None, stickerId: int = 65956773102028339):
+
+		data = {
+			"createdTime": 0,
+			"stickerId": stickerId,
+			"count": 0,
+			"justAddTimeMs": 0
+		}
+
+		if commentId:
+			data['objectType'] = 3
+			data['objectId'] = commentId
+
+		elif blogId:
+			data['objectType'] = 2
+			data['objectId'] = blogId
+
+		else:
+			raise exceptions.WrongType()
+
+		data = dumps(data)
+		endpoint = f'/v1/reactions'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def unlike(self, commentId: int = None, blogId: int = None, stickerId: int = 65956773102028339):
+
+		if commentId:
+			endpoint = f'/v1/reactions?objectId={commentId}&objectType=3&stickerId={stickerId}'
+		elif blogId:
+			endpoint = f'/v1/reactions?objectId={blogId}&objectType=2&stickerId={stickerId}'
+		else:
+			raise exceptions.WrongType()
+
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def invite_to_chat(self, userId: Union[int, list], chatId: int):
+		if isinstance(userId, int): userIds = [userId]
+		elif isinstance(userId, list): userIds = userId
+		else:raise exceptions.WrongType()
+
+		data = dumps({"invitedUids": userIds})
+
+		endpoint = f'/v1/chat/threads/{chatId}/members-invite'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def get_my_invitation_code(self):
+
+		endpoint = f'/v1/users/multi-invitation-code'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.invitationCode(loads(await response.text()))
+
+
+	async def get_circles_members(self, circleId: int, size: int = 30, type :str = 'normal', pageToken: str = None):
+
+		endpoint = f'/v1/circles/{circleId}/members?type={type}&size={size}&isExcludeManger=false{f"&pageToken={pageToken}" if pageToken else ""}'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.CirclesMembers(loads(await response.text()))
+
+
+	async def add_to_favorites(self, userId: Union[list, int]):
+
+		userIds = userId if isinstance(userId, list) else [userId]
+		data = dumps({"targetUids": userIds})
+		endpoint = '/v1/users/membership/favorites'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+

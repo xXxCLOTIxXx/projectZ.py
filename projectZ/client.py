@@ -385,6 +385,14 @@ class Client(Socket, CallBacks):
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.ChatInfo(loads(response.text))
 
+
+	def get_user_info(self, userId: int):
+
+		endpoint = f'/v1/users/profile/{userId}'
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.UserProfile(loads(response.text))
+
+
 	def follow(self, userId: int):
 
 		endpoint = f'/v1/users/membership/{userId}'
@@ -461,8 +469,6 @@ class Client(Socket, CallBacks):
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.CirclesMembers(loads(response.text))
 
-
-	#not tested----------
 
 	def add_to_favorites(self, userId: Union[list, int]):
 

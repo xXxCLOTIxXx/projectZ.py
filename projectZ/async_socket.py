@@ -1,7 +1,8 @@
 from aiohttp import ClientSession, WSMsgType
-from .utils import objects
+from .utils import objects, exceptions
 from asyncio import create_task, sleep
 from json import dumps, loads
+from traceback import format_exc
 
 
 class AsyncSocket:
@@ -143,8 +144,10 @@ class AsyncCallBacks:
 	async def call(self, type, data):
 		if type in self.handlers:
 			for handler in self.handlers[type]:
-				await handler(objects.Event(data))
-
+				try:await handler(objects.Event(data))
+				except:
+					if self.debug:
+						print("[event][call][error]Error calling your function:\n", format_exc(),'\n')
 
 	async def on_text_message(self, data): await self.call(type='on_text_message', data=data)
 	async def on_image_message(self, data): await self.call(type='on_image_message', data=data)
