@@ -4,7 +4,7 @@ with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.6.3'
+ver = '1.1.6.6'
 
 setup(
 	name = "projectZ.py",
@@ -35,7 +35,6 @@ setup(
 		"websocket-client",
 		"requests",
 		"aiohttp",
-		"python-magic-bin==0.4.14",
 		"aiofiles",
 	],
 	packages = find_packages()
