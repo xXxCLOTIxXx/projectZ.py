@@ -105,16 +105,36 @@ class Client(Socket, CallBacks):
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.FromLink(loads(response.text))
 
-	def get_link(self, userId: int):
 
-		data = dumps({
+
+	def get_link(self, userId: int = None, chatId: int = None, circleId: int = None, blogId: int = None):
+
+		data = {
 			"objectId": 0,
 			"objectType": 0,
 			"parentId": 0,
-			"path": f"user/{userId}",
 			"circleIdForCircleAnnouncement": 0,
 			"parentType": 0
-		})
+		}
+
+		if userId:
+			data["path"] = f"user/{userId}"
+
+		elif chatId:
+			data["path"] = f"chat/{chatId}"
+
+		elif circleId:
+			data["objectType"] = 5
+			data["objectId"] = circleId
+			data["path"] = f"circle/{circleId}"
+
+		elif blogId:
+			data["path"] = f"blog/{blogId}"
+
+		else:
+			raise exceptions.WrongType(fileType)
+
+		data = dumps(data)
 
 		endpoint = '/v1/links/share'
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
@@ -127,7 +147,7 @@ class Client(Socket, CallBacks):
 		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Thread(loads(response.text))
 
 
-	def send_message(self, chatId: int, message: str, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None):
+	def send_message(self, chatId: int, message: str, message_type: int = 1, replyTo: int = None, pollId: int = None, diceId: int = None):
 
 		data = {
 			"type": message_type,
@@ -138,9 +158,9 @@ class Client(Socket, CallBacks):
 		}
 		data["content"] = message
 
-		if reply_to: data["extensions"]["replyMessage"] = reply_to
-		if poll_id: data["extensions"]["pollId"] = poll_id
-		if dice_id: data["extensions"]["diceId"] = dice_id
+		if replyTo: data["extensions"]["replyMessageId"] = replyTo
+		if pollId: data["extensions"]["pollId"] = pollId
+		if diceId: data["extensions"]["diceId"] = diceId
 
 		resp = self.send(t=1, data=data, threadId=chatId)
 		return resp
@@ -578,5 +598,57 @@ class Client(Socket, CallBacks):
 
 		data = dumps({"partyOnlineStatus": 1 if online else 2})
 		endpoint = f"/v1/chat/threads/{chatId}/party-online-status"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+	def get_alerts(groupId: int = 3, size: int = 30):
+
+		endpoint = f"/v1/alerts?groupId={groupId}&size={size}"
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+	def get_moods(self):
+		endpoint = f"/v1/moods"
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+
+	def change_password(self, oldPassword: str, newPassword: str):
+
+		data = dumps({"oldPassword": oldPassword, "newPassword": newPassword})
+		endpoint="/v1/auth/change-password"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+
+
+	def get_message_info(self, chatId: int, messageId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}/messages/{messageId}"
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+	def delete_chat(self, chatId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}"
+		response = self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else response.status_code
+
+	def qivotes_chat(self, chatId: int):
+
+		data = dumps({
+			"uid": 0,
+			"objectId": chatId,
+			"objectType": 1,
+			"timezone": self.time_zone,
+			"votedCount": 1,
+			"votedDate": 0,
+			"createdTime": 0,
+			"lastVoteTime": 0
+		})
+		endpoint = "/v1/qivotes"
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)

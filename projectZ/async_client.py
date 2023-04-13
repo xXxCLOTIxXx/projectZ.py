@@ -133,16 +133,34 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.FromLink(loads(await response.text()))
 
 
-	async def get_link(self, userId: int):
+	async def get_link(self, userId: int = None, chatId: int = None, circleId: int = None, blogId: int = None):
 
-		data = dumps({
+		data = {
 			"objectId": 0,
 			"objectType": 0,
 			"parentId": 0,
-			"path": f"user/{userId}",
 			"circleIdForCircleAnnouncement": 0,
 			"parentType": 0
-		})
+		}
+
+		if userId:
+			data["path"] = f"user/{userId}"
+
+		elif chatId:
+			data["path"] = f"chat/{chatId}"
+
+		elif circleId:
+			data["objectType"] = 5
+			data["objectId"] = circleId
+			data["path"] = f"circle/{circleId}"
+
+		elif blogId:
+			data["path"] = f"blog/{blogId}"
+
+		else:
+			raise exceptions.WrongType(fileType)
+
+		data = dumps(data)
 
 		endpoint = '/v1/links/share'
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
@@ -155,7 +173,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else  objects.Thread(loads(await response.text()))
 
 
-	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, fileType: str = None, file_duration: int = None, message_type: int = 1, reply_to: int = None, poll_id: int = None, dice_id: int = None): 
+	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, fileType: str = None, file_duration: int = None, message_type: int = 1, replyTo: int = None, pollId: int = None, diceId: int = None): 
 		data = {
 			"threadId": chatId,
 			"uid": self.profile.uid,
@@ -171,9 +189,9 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		else:
 			raise exceptions.WrongType('Specify the "message" or "file" argument')
 
-		if reply_to: data["extensions"]["replyMessage"] = reply_to
-		if poll_id: data["extensions"]["pollId"] = poll_id
-		if dice_id: data["extensions"]["diceId"] = dice_id
+		if replyTo: data["extensions"]["replyMessageId"] = replyTo
+		if pollId: data["extensions"]["pollId"] = pollId
+		if diceId: data["extensions"]["diceId"] = diceId
 
 		resp = await self.send(t=1, data=data, threadId=chatId)
 		return resp
@@ -583,11 +601,133 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.CirclesMembers(loads(await response.text()))
 
 
-	async def add_to_favorites(self, userId: Union[list, int]):
 
-		userIds = userId if isinstance(userId, list) else [userId]
-		data = dumps({"targetUids": userIds})
-		endpoint = '/v1/users/membership/favorites'
+	async def get_baners(self):
+
+		endpoint = '/v2/banners'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Baners(loads(await response.text()))
+
+
+	async def activate_wallet(self, wallet_password: str, code: str, email: str = None):
+
+		data = dumps({
+			"authType": 1,
+			"identity": email if email else self.profile.email if self.profile.email else exceptions.NotLoggined('You are not authorized'),
+			"paymentPassword": wallet_password,
+			"securityCode": code
+		})
+
+		endpoint = '/biz/v1/wallet/0/activate'
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
 			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
 
+	async def activate_shop(self):
+
+		endpoint = '/biz/v1/activate-store'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.ActivateShop(loads(await response.text()))
+
+	async def wallet_info(self):
+
+		endpoint = '/biz/v1/wallet'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.WalletInfo(loads(await response.text()))
+
+
+	async def my_nfts(self):
+
+		endpoint = '/biz/v1/nfts/count'
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Nfts(loads(await response.text()))
+
+
+
+	async def comment(self, message: str, userId: int = None, blogId: int = None, replyId: dict = None):
+
+		data = {
+			"commentId": 0,
+			"status":1,
+			"parentId": userId,
+			"replyId": 0,
+			"circleId": 0,
+			"uid": 0,
+			"content": message,
+			"mediaList": [],
+			"commentType": 1,
+			"subComments": [],
+			"subCommentsCount": 0,
+			"isPinned": False
+		}
+
+		if userId:
+			data['parentType'] = 4
+
+		elif blogId:
+			data['parentType'] = 2
+
+		else:
+			raise exceptions.WrongType()
+
+
+		if replyId:
+			data['replyId'] = replyId['commentId']
+			data['extensions'] = {"replyToUid": replyId['userId'], "contentStatus": 1}
+
+		data = dumps(data)
+		endpoint = f'/v1/comments'
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Comments(loads(await response.text()))
+
+
+
+	async def get_alerts(groupId: int = 3, size: int = 30):
+
+		endpoint = f"/v1/alerts?groupId={groupId}&size={size}"
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+	async def get_moods(self):
+		endpoint = f"/v1/moods"
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+
+	async def change_password(self, oldPassword: str, newPassword: str):
+
+		data = dumps({"oldPassword": oldPassword, "newPassword": newPassword})
+		endpoint="/v1/auth/change-password"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def get_message_info(self, chatId: int, messageId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}/messages/{messageId}"
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def delete_chat(self, chatId: int):
+
+		endpoint = f"/v1/chat/threads/{chatId}"
+		async with self.session.delete(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+
+
+	async def qivotes_chat(self, chatId: int):
+
+		data = dumps({
+			"uid": 0,
+			"objectId": {chatId},
+			"objectType": 1,
+			"timezone": self.time_zone,
+			"votedCount": 1,
+			"votedDate": 0,
+			"createdTime": 0,
+			"lastVoteTime": 0
+		})
+		endpoint = "/v1/qivotes"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
