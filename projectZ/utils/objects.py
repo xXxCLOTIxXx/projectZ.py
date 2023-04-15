@@ -247,45 +247,9 @@ class WalletInfo:
 		self.createdTime = self.json.get('createdTime', None)
 		self.walletExtension = self.json.get('walletExtension', {})
 		self.unreadTransferOrderCount = self.json.get('unreadTransferOrderCount', None)
-		self.latestTransferOrder = self.LatestTransfer(self.json.get('latestTransferOrder', {}))
+		self.latestTransferOrder = LatestTransfer(self.json.get('latestTransferOrder', {}))
 		self.regularAccount = self.Account(self.json.get('regularAccount', {}))
 		self.storeAccount = self.Account(self.json.get('storeAccount', {}))
-
-	class LatestTransfer:
-		def __init__(self, data: dict = {}):
-			self.json = data
-
-			extensions = self.json.get('extensions', {})
-
-			self.orderId = self.json.get('orderId', None)
-			self.orderType = self.json.get('orderType', None)
-			self.currencyType = self.json.get('currencyType', None)
-			self.orderStatus = self.json.get('orderStatus', None)
-			self.fromUid = self.json.get('fromUid', None)
-			self.toUid = self.json.get('toUid', None)
-			self.amount = self.json.get('amount', None)
-			self.duration = self.json.get('duration', None)
-			self.minClaimedTime = self.json.get('minClaimedTime', None)
-			self.createdTime = self.json.get('createdTime', None)
-			self.returnTime = self.json.get('returnTime', None)
-			self.giftBoxId = extensions.get('status', None)
-			self.expiredTime = self.json.get('expiredTime', None)
-			self.currency = self.Currency(self.json.get('currency', {}))
-
-
-		class Currency:
-			def __init__(self, data: dict = {}):
-				self.json = data
-				self.name = self.json.get('name', None)
-				self.symbol = self.json.get('symbol', None)
-				self.icon = Media(self.json.get('icon', {}))
-				self.decimals = self.json.get('decimals', None)
-				self.currencyType = self.json.get('currencyType', None)
-				self.amount = self.json.get('amount', None)
-
-
-
-
 
 	class Account:
 		def __init__(self, data: dict = {}):
@@ -297,6 +261,43 @@ class WalletInfo:
 			self.ownerId = self.json.get('ownerId', None)
 			self.ownerType = self.json.get('ownerType', None)
 			self.currencyList = self.json.get('currencyList', None)
+
+
+
+
+
+
+class LatestTransfer:
+	def __init__(self, data: dict = {}):
+		self.json = data
+
+		extensions = self.json.get('extensions', {})
+
+		self.orderId = self.json.get('orderId', None)
+		self.orderType = self.json.get('orderType', None)
+		self.currencyType = self.json.get('currencyType', None)
+		self.orderStatus = self.json.get('orderStatus', None)
+		self.fromUid = self.json.get('fromUid', None)
+		self.toUid = self.json.get('toUid', None)
+		self.amount = self.json.get('amount', None)
+		self.duration = self.json.get('duration', None)
+		self.minClaimedTime = self.json.get('minClaimedTime', None)
+		self.createdTime = self.json.get('createdTime', None)
+		self.returnTime = self.json.get('returnTime', None)
+		self.giftBoxId = extensions.get('status', None)
+		self.expiredTime = self.json.get('expiredTime', None)
+		self.currency = self.Currency(self.json.get('currency', {}))
+
+
+	class Currency:
+		def __init__(self, data: dict = {}):
+			self.json = data
+			self.name = self.json.get('name', None)
+			self.symbol = self.json.get('symbol', None)
+			self.icon = Media(self.json.get('icon', {}))
+			self.decimals = self.json.get('decimals', None)
+			self.currencyType = self.json.get('currencyType', None)
+			self.amount = self.json.get('amount', None)
 
 
 
@@ -551,3 +552,31 @@ class CirclesMembers:
 		self.members = list()
 		for member in self.json.get("list", []):
 			self.members.append(UserProfile(member))
+
+
+class OrderInfo:
+	def __init__(self, data: dict = {}):
+		self.json = data
+		self.logId = self.json.get("logId")
+		self.userId = self.json.get("uid")
+		self.checkInDate = self.json.get("checkInDate")
+		self.orderId = self.json.get("orderId")
+		self.continuousCheckInDays = self.json.get("continuousCheckInDays")
+		self.createdTime = self.json.get("createdTime")
+		self.checkInDateUnix = self.json.get("checkInDateUnix")
+		self.nextMultipleStr = self.json.get("nextMultipleStr")
+		self.needDays = self.json.get("needDays")
+		self.decimals = self.json.get("decimals")
+		self.currencyType = self.json.get("currencyType")
+		self.currency = self.json.get("currency", {})
+		self.amount = self.currency.get("amount")
+
+
+
+class Gifts:
+	def __init__(self, data: dict = {}):
+		self.json = data
+		self.pagination = self.json.get("pagination")
+		self.gifts = list()
+		for gift in self.json.get("list", []):
+			self.gifts.append(LatestTransfer(gift))

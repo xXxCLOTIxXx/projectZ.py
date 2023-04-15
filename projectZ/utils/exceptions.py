@@ -53,6 +53,11 @@ class TooManyRequests(Exception):
 		Exception.__init__(*args, **kwargs)
 
 
+class WalletNotActivated(Exception):
+	def __init__(*args, **kwargs):
+		Exception.__init__(*args, **kwargs)
+
+
 errors = {
 	2009: EmailNotRegistered,
 	2022: InvalidEmail,
@@ -61,7 +66,8 @@ errors = {
 	2038: AlreadyRegistered,
 	6107: TooManyRequests,
 	7008: BadMedia,
-	1000004: NoWalletError
+	1000004: NoWalletError,
+	1000108: WalletNotActivated
 }
 
 def CheckException(data):

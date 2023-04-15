@@ -15,13 +15,14 @@ from typing import Union, Optional
 gen = Generator()
 
 class AsyncClient(AsyncSocket, AsyncCallBacks):
-	def __init__(self, deviceId: str = None, socket_debug: bool = False, language: str = "en-US", country_code: str = "en", time_zone: int = 180):
+	def __init__(self, deviceId: str = None, socket_debug: bool = False, run_socket: bool = True, language: str = "en-US", country_code: str = "en", time_zone: int = 180):
 		self.api = 'https://api.projz.com'
 		self.deviceId = deviceId if deviceId else gen.deviceId()
 		self.profile = objects.User()
 		self.language = language
 		self.country_code = country_code
 		self.time_zone = time_zone
+		self.run_socket = run_socket
 
 		self.session = ClientSession()
 
@@ -85,7 +86,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			if response.status != 200: return exceptions.CheckException(await response.text())
 			else:
 				self.profile = objects.User(loads(await response.text()))
-				await self.connect()
+				if self.run_socket:await self.connect()
 				return self.profile
 
 
@@ -95,15 +96,17 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 			if response.status != 200: return exceptions.CheckException(await response.text())
 			else:
 				self.profile = objects.User()
-				await self.disconnect()
+				if self.run_socket:await self.disconnect()
 				return response.status
 
 	async def Online(self):
+		if not self.run_socket:return
 		if self.online_loop_active: return
 		self.online_loop_active = create_task(self.online_loop())
 		return self.online_loop_active
 
 	async def Offline(self):
+		if not self.run_socket:return
 		if self.online_loop_active:
 			self.online_loop_active.cancel()
 			self.online_loop_active = None
@@ -174,6 +177,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 
 
 	async def send_message(self, chatId: int, message: str = None, file: AsyncBufferedReader = None, fileType: str = None, file_duration: int = None, message_type: int = 1, replyTo: int = None, pollId: int = None, diceId: int = None): 
+		if not self.run_socket:return
 		data = {
 			"threadId": chatId,
 			"uid": self.profile.uid,
@@ -355,10 +359,8 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 	async def check_in(self):
 		endpoint = f"/v1/users/check-in"
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
-			response = exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
-		orderId = response.get("orderId", None)
-
-		await self.claim_transfer_orders(orderId=orderId)
+			response = exceptions.CheckException(await response.text()) if response.status != 200 else objects.OrderInfo(loads(await response.text()))
+		await self.claim_transfer_orders(orderId=response.orderId)
 
 		return response
 
@@ -366,7 +368,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 
 		endpoint = f"/biz/v3/transfer-orders/{orderId}/claim"
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
-			return exceptions.CheckException(await response.text()) if response.status != 200 else response.status
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())#response.status
 
 
 	async def claim_gift_boxes(self, orderId: int):
@@ -381,7 +383,7 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
 			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
 
-	async def send_coins(self, wallet_password: int, userId: int, amount: int, title: str = "Всего Наилучшего!"):
+	async def send_coins(self, wallet_password: int, userId: int, amount: int, title: str = "All the best!"):
 
 		data = dumps({
 			"toObjectId": userId,
@@ -730,4 +732,24 @@ class AsyncClient(AsyncSocket, AsyncCallBacks):
 		})
 		endpoint = "/v1/qivotes"
 		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def get_user_tasks(self):
+
+		endpoint = f"/v2/user-tasks"
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())
+
+
+	async def get_my_gifts(self, size: int = 60):
+		endpoint = f"/biz/v2/transfer-orders?size={size}"
+		async with self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
+			return exceptions.CheckException(await response.text()) if response.status != 200 else objects.Gifts(loads(await response.text()))
+
+
+	async def gift_withdrawn(self, orderId):
+
+		endpoint = f"/biz/v1/gift-boxes/{orderId}/withdrawn"
+		async with self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint)) as response:
 			return exceptions.CheckException(await response.text()) if response.status != 200 else loads(await response.text())

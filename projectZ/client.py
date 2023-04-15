@@ -552,10 +552,8 @@ class Client(Socket, CallBacks):
 	def check_in(self):
 		endpoint = f"/v1/users/check-in"
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
-		response = exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
-		orderId = response.get("orderId", None)
-		self.claim_transfer_orders(orderId=orderId)
-
+		response = exceptions.CheckException(response.text) if response.status_code != 200 else objects.OrderInfo(loads(response.text))
+		self.claim_transfer_orders(orderId=response.orderId)
 		return response
 
 	def claim_transfer_orders(self, orderId: int):
@@ -652,3 +650,21 @@ class Client(Socket, CallBacks):
 		endpoint = "/v1/qivotes"
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
 		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+
+	def get_user_tasks(self):
+
+		endpoint = f"/v2/user-tasks"
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
+
+	def get_my_gifts(self, size: int = 60):
+		endpoint = f"/biz/v2/transfer-orders?size={size}"
+		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status_code != 200 else objects.Gifts(loads(response.text))
+
+	def gift_withdrawn(self, orderId):
+
+		endpoint = f"/biz/v1/gift-boxes/{orderId}/withdrawn"
+		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)
+		return exceptions.CheckException(response.text) if response.status != 200 else loads(response.text)
