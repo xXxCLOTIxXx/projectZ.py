@@ -28,7 +28,7 @@ class Client(Socket, CallBacks):
 		CallBacks.__init__(self)
 
 
-	def parse_headers(self, endpoint: str, data = None, content_type: str = 'application/json') -> dict:
+	def parse_headers(self, endpoint: str, data = None, content_type: str = 'application/json; charset=UTF-8') -> dict:
 		h = headers.Headers(deviceId=self.deviceId, sid=self.profile.sid, time_zone=self.time_zone, country_code=self.country_code, language=self.language)
 		head = h.get_persistent_headers()
 		head.update(h.Headers())
@@ -55,9 +55,9 @@ class Client(Socket, CallBacks):
 	def login(self, email: str, password: str):
 
 		data = dumps({
-			"authType": 1,
-			"email": email,
-			"password": password
+			"password":password,
+			"email":email,
+			"authType":1
 		})
 		endpoint = '/v1/auth/login'
 		response = self.session.post(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint, data=data), data=data, proxies=self.proxies)
@@ -132,7 +132,7 @@ class Client(Socket, CallBacks):
 			data["path"] = f"blog/{blogId}"
 
 		else:
-			raise exceptions.WrongType(fileType)
+			raise exceptions.WrongType()
 
 		data = dumps(data)
 
@@ -600,7 +600,7 @@ class Client(Socket, CallBacks):
 		return exceptions.CheckException(response.text) if response.status_code != 200 else loads(response.text)
 
 
-	def get_alerts(groupId: int = 3, size: int = 30):
+	def get_alerts(self, groupId: int = 3, size: int = 30):
 
 		endpoint = f"/v1/alerts?groupId={groupId}&size={size}"
 		response = self.session.get(f"{self.api}{endpoint}", headers=self.parse_headers(endpoint=endpoint), proxies=self.proxies)

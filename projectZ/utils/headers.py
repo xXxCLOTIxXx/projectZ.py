@@ -12,7 +12,7 @@ class Headers:
 	def Headers(self):
 
 		headers = {
-			"rawDeviceId": self.deviceId,
+			"rawDeviceId": "0436103c274039ff6e0755d8003a7852a1945755d4ca8c5d2f4b88bebb42a5fc3631c8c5b85c96740b",#self.deviceId,
 			"nonce": str(uuid4()),
 			"Accept-Language": self.language,
 			"countryCode": self.country_code.upper(),
@@ -25,7 +25,7 @@ class Headers:
 		return headers
 
 	def get_persistent_headers(self) -> dict: return {
-		"appType": "MainApp", "appVersion": "2.3.1",
-		"osType": "1", "deviceType": "1", "flavor": "google",
-		"User-Agent": "com.projz.z.android/1.24.7-13774 (Linux; U; Android 7.1.2; ASUS_Z01QD; Build/Asus-user 7.1.2 2017)"
-	}
+            "appType": "MainApp", "appVersion": "2.27.1",
+            "osType": "2", "deviceType": "1", "flavor": "google",
+            "User-Agent": "com.projz.z.android/2.27.1-25104 (Linux; U; Android 7.1.2; ASUS_Z01QD; Build/Asus-user 7.1.2 2017)"
+        }
