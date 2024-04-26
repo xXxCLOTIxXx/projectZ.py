@@ -1,10 +1,11 @@
 from setuptools import setup, find_packages
+from platform import system
 
 with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.6.6'
+ver = '1.1.7.2'
 
 setup(
 	name = "projectZ.py",
@@ -29,13 +30,16 @@ setup(
 		"xsarz",
 		"official",
 		"async",
-		"sync"
+		"sync",
+		"projz"
 	],
 	install_requires = [
 		"websocket-client",
 		"requests",
 		"aiohttp",
 		"aiofiles",
+		"ujson",
+		"python-magic-bin" if system().lower() == "windows" else "python-magic"
 	],
 	packages = find_packages()
 )
