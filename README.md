@@ -30,7 +30,7 @@
 		</tr>
 	</table>
 <h1 align="center">projectZ.py</h1>
-<p align="center">Library for working with projectZ servers, below you will see code examples, for more examples see the documentation or the examples folder</p>
+<p align="center">Library for working with projectZ servers, below you will see code examples</p>
 <h1 align="center">Login example</h1>
 
 ```python
