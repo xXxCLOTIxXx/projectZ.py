@@ -14,7 +14,7 @@ from threading import Thread
 gen = generator.Generator()
 
 class Client(Socket, CallBacks):
-	def __init__(self, deviceId: str = None, proxies: dict = None, socket_debug: bool = False, sock_trace: bool = False, language: str = "en-US", country_code: str = "en", time_zone: int = 180):
+	def __init__(self, deviceId: str = None, proxies: dict = None, socket_debug: bool = False, sock_trace: bool = False, language: str = "en-US", country_code: str = "us", time_zone: int = 180):
 		self.api = 'https://api.projz.com'
 		self.session = Session()
 		self.proxies = None
