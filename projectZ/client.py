@@ -7,8 +7,9 @@ from .requests_builder import requester
 from .objects.profile import profile
 from .objects.objects import *
 from .objects.constants import LoggerLevel, ws_endpoint
+from .objects.ChatMessageTypes import ChatMessageTypes
 from .utils.exceptions import (
-	WrongType, NotLoggined
+	WrongType
 )
 
 class Client(Socket):
@@ -36,13 +37,11 @@ class Client(Socket):
 
 
 	def login(self, email: str, password: str) -> User:
-
-		data = {
+		result = User(self.req.request("POST", "/v1/auth/login", {
 			"password":password,
 			"email":email,
 			"authType":1
-		}
-		result = User(self.req.request("POST", "/v1/auth/login", data))
+		}))
 		self.req.profile.sid, self.req.profile.uid = result.sid, result.uid
 		self.ws_connect(self.req.build_headers(ws_endpoint))
 		return result
@@ -91,7 +90,7 @@ class Client(Socket):
 		return Thread(self.req.request("GET", f"/v1/chat/joined-threads?start={start}&size={size}&type={type}"))
 
 
-	def send_message(self, chatId: int, message: str = None, message_type: int = 1, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
+	def send_message(self, chatId: int, message: str = None, media: Media = None, audio: Media = None, message_type: int = ChatMessageTypes.TEXT, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
 		data = {
 			"type": message_type,
 			"threadId": chatId,
@@ -100,10 +99,11 @@ class Client(Socket):
 			"extensions": {}
 		}
 		if message:data["content"] = message
+		if media: data["media"] = media.json
+		elif audio: data["media"] = audio.json
 		if replyTo: data["extensions"]["replyMessageId"] = replyTo
 		if pollId: data["extensions"]["pollId"] = pollId
 		if diceId: data["extensions"]["diceId"] = diceId
-
 		self.ws_send(req_t=message_type, **dict(threadId=chatId, msg=data))
 
 

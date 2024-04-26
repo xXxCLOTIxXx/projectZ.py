@@ -61,7 +61,7 @@ class Socket(WsMessageHandler, WsRequester):
 		if data["t"] == SocketEventTypes.MESSAGE.value:self.call(data)
 		elif data["t"] == SocketEventTypes.ACK.value:
 			ack = data["serverAck"]
-			print(ack)
+			#print(ack)
 
 
 
