@@ -8,7 +8,7 @@ link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
 ver = '1.1.7.2'
 
 setup(
-	name = "projectZ.py",
+	name = "projectZ",
 	version = ver,
 	url = "https://github.com/xXxCLOTIxXx/projectZ.py",
 	download_url = link,
