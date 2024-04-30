@@ -1,12 +1,10 @@
 <body>
-	<table align="center">
-		<tr> <th colspan="3">Library Information</th> </tr>
-		<tr>
-			<td>
-				<a href='https://pypi.org/project/projectZ/'><img src="https://raw.githubusercontent.com/github/explore/666de02829613e0244e9441b114edb85781e972c/topics/pip/pip.png" height="60px">
-				 Library in pypi</a>
-			</td>
-	</table>
+	<p align="center">
+	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/releases"><img src="https://img.shields.io/github/v/release/xXxCLOTIxXx/projectZ.py" alt="GitHub release" />
+	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="licence" /></a>
+	    <a href="https://pypi.org/project/projectZ/"><img src="https://img.shields.io/pypi/v/projectZ" alt="pypi" /></a>
+	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.md"><img src="https://img.shields.io/website?down_message=failing&label=docs&up_color=green&up_message=passing&url=https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.md" alt="docs" /></a>
+	</p>
 	<table align="center">
 		</tr>
 		<tr> <th colspan="3">More info</th> </tr>
