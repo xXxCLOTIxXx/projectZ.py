@@ -24,6 +24,13 @@
 		</tr>
 	</table>
 <h1 align="center">projectZ.py</h1>
+```bash
+pip install projectZ
+```
+<p>or</p>
+```bash
+pip install projectZ
+```
 <p align="center">Library for working with projectZ servers, below you will see code examples</p>
 <h1 align="center">Login example</h1>
 
