@@ -5,10 +5,10 @@ with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.7.2'
+ver = '1.1.7.2.1'
 
 setup(
-	name = "projectZ.py",
+	name = "projectZ",
 	version = ver,
 	url = "https://github.com/xXxCLOTIxXx/projectZ.py",
 	download_url = link,
@@ -38,8 +38,7 @@ setup(
 		"requests",
 		"aiohttp",
 		"aiofiles",
-		"ujson",
-		"python-magic-bin" if system().lower() == "windows" else "python-magic"
+		"ujson"
 	],
 	packages = find_packages()
 )
