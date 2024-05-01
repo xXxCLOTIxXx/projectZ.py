@@ -1,6 +1,8 @@
 from sys import maxsize
 from random import randint
-from typing import Union
+from typing import Union, BinaryIO
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+from mimetypes import guess_type
 
 from .ws.socket import Socket
 from .requests_builder import requester
@@ -34,6 +36,13 @@ class Client(Socket):
 	@property
 	def deviceId(self):
 		return self.req.profile.deviceId
+
+
+	def upload_media(self, file: BinaryIO, target: int, duration: int = 0) -> Media:
+		data = MultipartEncoder({
+        	'media': (file.name, file.read(), guess_type(file.name)[0])
+   		 })
+		return Media(self.req.request("POST", f"/v1/media/upload?target={target}&duration={duration}", data, content_type=data.content_type))
 
 
 	def login(self, email: str, password: str) -> User:
@@ -90,7 +99,7 @@ class Client(Socket):
 		return Thread(self.req.request("GET", f"/v1/chat/joined-threads?start={start}&size={size}&type={type}"))
 
 
-	def send_message(self, chatId: int, message: str = None, media: Media = None, audio: Media = None, message_type: int = ChatMessageTypes.TEXT, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
+	def send_message(self, chatId: int, message: str = None, media: Media = None, message_type: int = ChatMessageTypes.TEXT, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
 		data = {
 			"type": message_type,
 			"threadId": chatId,
@@ -98,17 +107,28 @@ class Client(Socket):
 			"seqId": randint(0, maxsize),
 			"extensions": {}
 		}
-		if message:data["content"] = message
-		if media: data["media"] = media.json
-		elif audio: data["media"] = audio.json
-		if replyTo: data["extensions"]["replyMessageId"] = replyTo
+		if message:
+			data["content"] = message
+			if replyTo: data["extensions"]["replyMessageId"] = replyTo
+		elif media: data["media"] = media.json
 		if pollId: data["extensions"]["pollId"] = pollId
 		if diceId: data["extensions"]["diceId"] = diceId
-		self.ws_send(req_t=message_type, **dict(threadId=chatId, msg=data))
+		self.ws_send(req_t=1, **dict(threadId=chatId, msg=data))
 
+	def send_text_message(self, chatId: int, message: str) -> None:
+		self.send_message(chatId=chatId, message=message, message_type=ChatMessageTypes.TEXT)
+
+	def send_audio_message(self, chatId: int, audio: Media) -> None:
+		self.send_message(chatId=chatId, media=audio, message_type=ChatMessageTypes.AUDIO)
+
+	def send_image_message(self, chatId: int, image: Media) -> None:
+		self.send_message(chatId=chatId, media=image, message_type=ChatMessageTypes.MEDIA)
+
+	def send_video_message(self, chatId: int, video: Media) -> None:
+		self.send_message(chatId=chatId, media=video, message_type=ChatMessageTypes.VIDEO)
 
 	def typing(self, chatId: int) -> None:
-		self.send_message(chatId=chatId, message_type=60)
+		self.send_message(chatId=chatId, message_type=ChatMessageTypes.TYPING)
 
 
 	def visit(self, userId) -> dict:
@@ -338,3 +358,32 @@ class Client(Socket):
 
 	def gift_withdrawn(self, orderId) -> dict:
 		return self.req.request("GET", f'/biz/v1/gift-boxes/{orderId}/withdrawn')
+
+	def report(self, userId: int, message: str, images: Union[Media, list[Media]], flagType: int = 100) -> dict:
+
+		media = list()
+		if isinstance(images, Media):images=[images]
+		elif isinstance(images, list):pass
+		else:raise WrongType()
+		data = {
+			"objectId": userId,
+			"objectType": 4,
+			"flagType": flagType,
+			"message": message,
+		}
+		for image in images:
+			media.append(image.json)
+		data["mediaList"] = media
+		return self.req.request("POST", f'/v1/flags', data)
+
+	def get_my_companion(self) -> dict:
+		return self.req.request("GET", f'/v1/companion')
+
+	def set_companion(self, nftId: int) -> dict:
+		return self.req.request("POST", f'/v1/companion', {"nftId": nftId})
+
+	def get_build_in_companions(self, size: int = 10) -> dict:
+		return self.req.request("GET", f'/biz/v1/build-in-character-list?size={size}')
+
+	def get_nft_info(self, nftId: int) -> dict:
+		return self.req.request("GET", f'/biz/v1/nft/{nftId}')

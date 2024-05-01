@@ -1,9 +1,9 @@
 from sys import maxsize
 from random import randint
-from typing import Union, Optional
 from aiofiles.threadpool.binary import AsyncBufferedReader
 from aiohttp import MultipartWriter
-from magic import from_buffer
+from mimetypes import guess_type
+from typing import Union
 
 from .ws.async_socket import AsyncSocket
 from .requests_builder import AsyncRequester
@@ -40,11 +40,11 @@ class AsyncClient(AsyncSocket):
 		return self.req.profile.deviceId
 
 
-	async def upload_media(self, file: Union[bytes, AsyncBufferedReader], target: int, duration: int = 0) -> Media:
-		file_content = await file.read() if isinstance(file, AsyncBufferedReader) else file
+	async def upload_media(self, file: AsyncBufferedReader, target: int, duration: int = 0) -> Media:
+		file_content = await file.read()
 		writer = MultipartWriter()
-		part = writer.append(file_content, {"Content-Type": from_buffer(file_content, mime=True)})
-		part.set_content_disposition("form-data", name="media", filename=file.name if isinstance(file, AsyncBufferedReader) else "file")
+		part = writer.append(file_content, {"Content-Type": guess_type(file.name)[0]})
+		part.set_content_disposition("form-data", name="media", filename=file.name)
 		return Media(await self.req.request("POST", f"/v1/media/upload?target={target}&duration={duration}", writer, content_type=f"multipart/form-data; boundary={writer.boundary}"))
 
 
@@ -104,7 +104,7 @@ class AsyncClient(AsyncSocket):
 		return Thread(await self.req.request("GET", f"/v1/chat/joined-threads?start={start}&size={size}&type={type}"))
 
 
-	async def send_message(self, chatId: int, message: str = None, media: Media = None, audio: Media = None, message_type: int = ChatMessageTypes.TEXT, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
+	async def send_message(self, chatId: int, message: str = None, media: Media = None, message_type: int = ChatMessageTypes.TEXT, replyTo: int = None, pollId: int = None, diceId: int = None) -> None:
 		data = {
 			"type": message_type,
 			"threadId": chatId,
@@ -112,17 +112,28 @@ class AsyncClient(AsyncSocket):
 			"seqId": randint(0, maxsize),
 			"extensions": {}
 		}
-		if message:data["content"] = message
-		if replyTo: data["extensions"]["replyMessageId"] = replyTo
-		if media: data["media"] = media.json
-		elif audio: data["media"] = audio.json
+		if message:
+			data["content"] = message
+			if replyTo: data["extensions"]["replyMessageId"] = replyTo
+		elif media: data["media"] = media.json
 		if pollId: data["extensions"]["pollId"] = pollId
 		if diceId: data["extensions"]["diceId"] = diceId
-		await self.ws_send(req_t=message_type, **dict(threadId=chatId, msg=data))
+		await self.ws_send(req_t=1, **dict(threadId=chatId, msg=data))
 
+	async def send_text_message(self, chatId: int, message: str) -> None:
+		await self.send_message(chatId=chatId, message=message, message_type=ChatMessageTypes.TEXT)
+
+	async def send_audio_message(self, chatId: int, audio: Media) -> None:
+		await self.send_message(chatId=chatId, media=audio, message_type=ChatMessageTypes.AUDIO)
+
+	async def send_image_message(self, chatId: int, image: Media) -> None:
+		await self.send_message(chatId=chatId, media=image, message_type=ChatMessageTypes.MEDIA)
+
+	async def send_video_message(self, chatId: int, video: Media) -> None:
+		await self.send_message(chatId=chatId, media=video, message_type=ChatMessageTypes.VIDEO)
 
 	async def typing(self, chatId: int) -> None:
-		await self.send_message(chatId=chatId, message_type=60)
+		await self.send_message(chatId=chatId, message_type=ChatMessageTypes.TYPING)
 
 
 	async def visit(self, userId) -> dict:
@@ -369,3 +380,15 @@ class AsyncClient(AsyncSocket):
 			media.append(image.json)
 		data["mediaList"] = media
 		return await self.req.request("POST", f'/v1/flags', data)
+
+	async def get_my_companion(self) -> dict:
+		return await self.req.request("GET", f'/v1/companion')
+
+	async def set_companion(self, nftId: int) -> dict:
+		return await self.req.request("POST", f'/v1/companion', {"nftId": nftId})
+
+	async def get_build_in_companions(self, size: int = 10) -> dict:
+		return await self.req.request("GET", f'/biz/v1/build-in-character-list?size={size}')
+
+	async def get_nft_info(self, nftId: int) -> dict:
+		return await self.req.request("GET", f'/biz/v1/nft/{nftId}')

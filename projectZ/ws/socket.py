@@ -2,7 +2,6 @@ from websocket import WebSocketApp, enableTrace
 from websocket import _exceptions as WSexceptions
 from threading import Thread
 from ujson import loads, dumps
-from time import sleep
 
 from ..objects.constants import (
 	ws_url, ws_endpoint, LoggerLevel,

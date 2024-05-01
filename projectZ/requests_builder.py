@@ -1,5 +1,6 @@
 from typing import Optional, Union
 from requests import Session
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 from aiohttp import ClientSession, MultipartWriter
 from io import BytesIO
 from ujson import dumps
@@ -28,6 +29,7 @@ class requester:
 		if body:
 			content = BytesIO()
 			if isinstance(body, bytes): content.write(body)
+			elif isinstance(body, MultipartEncoder): content.write(body.to_string())
 			elif isinstance(body, str): content.write(body.encode("utf-8"))
 			elif isinstance(body, dict): content.write(dumps(body).encode("utf-8"))
 			else: raise ValueError(f"Invalid request body type: \"{body.__class__.__name__}\"")
