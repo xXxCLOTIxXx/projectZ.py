@@ -11,19 +11,21 @@
 			<img src="https://img.shields.io/static/v1?style=for-the-badge&label=Sponsor project&message=%E2%9D%A4&color=ff69b4" alt="Sponsor project"/>
 		</a>
 		<hr>
-		<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=2000&pause=2000&color=F79B1F&random=false&width=200&lines=Installation"/>
-	</div>
-		    
-```bash
-pip install projectZ
-```
-<h4 align="center">or</h4>
-		    
+		<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=2000&pause=2000&color=F79B1F&random=false&width=200&repeat=false&lines=Installation" alt="Installation"/>
+	<p>Git</p>
+	
 ```bash
 pip install git+https://github.com/xXxCLOTIxXx/projectZ.py.git
 ```
-<p align="center">Library for working with projectZ servers, below you will see code examples</p>
-<h1 align="center">Login example</h1>
+<p>pypi</p>
+
+```bash
+pip install projectZ
+```
+<hr><br>
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=2000&pause=2000&color=F79B1F&repeat=false&random=false&width=90&lines=Using" alt="Using"/>
+</div>
+<h4 align="center">Login example</h4>
 
 ```python
 import projectZ
@@ -31,8 +33,8 @@ import projectZ
 client = projectZ.Client()
 client.login(email='email', password='password')
 ```
-
-<h1 align="center">Async login example</h1>
+<br><br>
+<h4 align="center">Async login example</h4>
 
 ```python
 import projectZ
@@ -47,5 +49,10 @@ if __name__ == '__main__':
 	loop = asyncio.get_event_loop()
 	loop.run_until_complete(main())
 ```
-
+<hr><br>
+<div align="center">
+<a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.html">
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=14&duration=1&pause=31&color=3DACF7&random=false&width=195&lines=Read+the+documentation" alt="=Read the documentation"/>
+</a>
+</div>
 </body>
