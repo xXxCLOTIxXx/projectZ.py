@@ -1,6 +1,6 @@
 <body>
 	<p align="center">
-	    <a href="#"><img src="https://github.com/xXxCLOTIxXx/projectZ.py/blob/dev/docs/res/logo.png"/></a>
+	    <a href="#"><img src="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/res/logo.png"/></a>
 	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/releases"><img src="https://img.shields.io/github/v/release/xXxCLOTIxXx/projectZ.py" alt="GitHub release" />
 	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="licence" /></a>
 	    <a href="https://pypi.org/project/projectZ/"><img src="https://img.shields.io/pypi/v/projectZ" alt="pypi" /></a>
