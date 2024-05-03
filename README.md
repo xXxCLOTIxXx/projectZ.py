@@ -10,26 +10,9 @@
 		<a href="https://github.com/xXxCLOTIxXx/xXxCLOTIxXx/blob/main/sponsor.md">
 			<img src="https://img.shields.io/static/v1?style=for-the-badge&label=Sponsor project&message=%E2%9D%A4&color=ff69b4" alt="Sponsor project"/>
 		</a>
+		<hr>
+		<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=2000&pause=2000&color=F79B1F&random=false&width=200&lines=Installation"/>
 	</div>
-	<table align="center">
-		</tr>
-		<tr> <th colspan="3">More info</th> </tr>
-		<tr>
-			<td>
-				<a href="https://t.me/DxsarzUnion"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" height="30px">
-				 Telegram Channel</a>
-			</td>
-			<td>
-				<a href="https://www.youtube.com/channel/UCNKEgQmAvt6dD7jeMLpte9Q"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" height="30px">
-				 YouTube channel</a>
-			</td>
-			<td>
-				<a href="https://discord.gg/GtpUnsHHT4"><img src="https://www.svgrepo.com/show/353655/discord-icon.svg" height="30px">
-				 Discord Server</a>
-			</td>
-		</tr>
-	</table>
-<h1 align="center">projectZ.py</h1>
 		    
 ```bash
 pip install projectZ
