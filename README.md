@@ -51,7 +51,7 @@ if __name__ == '__main__':
 ```
 <hr><br>
 <div align="center">
-<a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.html">
+<a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.md">
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=14&duration=1&pause=31&color=3DACF7&random=false&width=195&lines=Read+the+documentation" alt="=Read the documentation"/>
 </a>
 </div>
