@@ -207,6 +207,7 @@ class Event:
 		self.adminPartyOnlineStatus = authorExtensions.get('adminPartyOnlineStatus', None)
 		self.bubbleColor = msg.get('bubbleColor', None)
 		self.ref = msg.get('ref', {})
+		self.giftBox = msg.get("giftBox", None)
 
 
 
