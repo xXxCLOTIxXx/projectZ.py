@@ -13,7 +13,7 @@ Welcome to the project documentation! Below you will find links to various secti
 ---
 <div align="center">
 	
-## 📘 [**Installation**](#installation)
+## 📘 **Installation**
 
 <p>Git</p>
 	
@@ -28,7 +28,7 @@ pip install projectZ
 </div>
 
 ---
-## 💻 [**Client**](#client)
+## 💻 **Client**
 In this section you will see all the functions of the library, how to create your own queries that are not in the library, and more.
 
 <div align="center">
@@ -39,7 +39,7 @@ In this section you will see all the functions of the library, how to create you
 
 ---
 
-## ⚙️ [**Socket**](#socket)
+## ⚙️ **Socket**
 In this section you will see examples of how to use a socket (handling new messages, sending)
 
 <div align="center">
@@ -51,7 +51,7 @@ In this section you will see examples of how to use a socket (handling new messa
 
 ---
 
-## 🏷️ [**Сonstants**](#constants)
+## 🏷️ **Сonstants**
 In this section, you will see constant classes that will help you pass special arguments to functions (you can pass both a constant class and a regular argument. This is done for convenience + some argument values ​​can only be learned by analyzing application traffic)
 
 <div align="center">
@@ -64,7 +64,7 @@ In this section, you will see constant classes that will help you pass special a
 
 ---
 
-## 🧩 [**Objects**](#objects)
+## 🧩 **Objects**
 in this section you can see the classes of objects, as well as their attributes (these objects are returned to you by the function)
 
 <div align="center">
@@ -75,7 +75,7 @@ in this section you can see the classes of objects, as well as their attributes 
 
 ---
 
-## ⚠️ [**Exceptions**](#exceptions)
+## ⚠️ **Exceptions**
 In this section you can see all types of exceptions (errors) and their descriptions for handling these same errors
 
 <div align="center">
@@ -86,7 +86,7 @@ In this section you can see all types of exceptions (errors) and their descripti
 
 ---
 
-## 🔄 [**Generators**](#generators)
+## 🔄 **Generators**
 In this section you will learn how to generate your device ID yourself and other functions related to the generation of application security mechanisms (often this is not required, the library does everything for you)
 
 <div align="center">
