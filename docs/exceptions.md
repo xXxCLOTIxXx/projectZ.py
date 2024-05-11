@@ -21,7 +21,7 @@ except exceptions.UnknownError as e:
 
 <h3 align="center">All exceptions</h3>
 
-1. **UnknownError**: An exception that occurs when an unknown error or situation that was not anticipated in the program happens.
+1. **UnknownError**: An exception that occurs when the server returns an error, but this error is not found in the list of defined exceptions. This typically happens when the server responds with an unexpected error code or message that is not handled by the client's code.
 
 2. **InvalidLink**: An exception that occurs when attempting to use an invalid link.
 
