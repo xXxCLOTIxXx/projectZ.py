@@ -1,6 +1,11 @@
 from setuptools import setup, find_packages
 from platform import system
 
+
+packages = find_packages()
+print(packages)
+
+
 with open("README.md", "r") as file:
 	long_description = file.read()
 
@@ -40,5 +45,5 @@ setup(
 		"aiofiles",
 		"ujson"
 	],
-	packages = find_packages()
+	packages = packages
 )
