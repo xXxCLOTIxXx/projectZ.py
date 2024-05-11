@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from platform import system
 
 
 packages = find_packages()
