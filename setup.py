@@ -1,11 +1,15 @@
 from setuptools import setup, find_packages
-from platform import system
+
+
+packages = find_packages()
+print(packages)
+
 
 with open("README.md", "r") as file:
 	long_description = file.read()
 
 link = 'https://github.com/xXxCLOTIxXx/projectZ.py/archive/refs/heads/main.zip'
-ver = '1.1.7.2.1'
+ver = '1.1.7.2.1.3'
 
 setup(
 	name = "projectZ",
@@ -40,5 +44,5 @@ setup(
 		"aiofiles",
 		"ujson"
 	],
-	packages = find_packages()
+	packages = packages
 )
