@@ -33,6 +33,20 @@ import projectZ
 client = projectZ.Client()
 client.login(email='email', password='password')
 ```
+
+
+```python
+import projectZ
+
+client = projectZ.Client()
+client.login(email='email', password='password')
+
+
+@client.event("on_text_message")
+def message(data):
+    print(data.json)
+```
+
 <br><br>
 <h4 align="center">Async login example</h4>
 
