@@ -18,17 +18,21 @@ client = Client(deviceId=deviceId)
 ```python
 from projectZ import gen_signature
 from json import dumps
+from io import BytesIO
+
+
+content = BytesIO()
 
 endpoint="/auth/login/ect"
 headers = {
 	"countryCode": "us"
 }
 
-data = dumps({
+content.write(dumps({
 	"name": "exmpl",
 	"pswd": "1111111"
-})
+}).encode("utf-8"))
 
-sig = gen_signature(path=endpoint, headers=headers, body=data)
+sig = gen_signature(path=endpoint, headers=headers, body=content.getvalue())
 print(sig)
 ```
