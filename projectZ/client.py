@@ -320,6 +320,19 @@ class Client(Socket):
 			"title": title
 		})
 
+	def send_nft(self, wallet_password: int, userId: int, nftId: int, amount: int = 0, title: str = "Muitas Felicidades!!!") -> dict:
+		return self.req.request("POST", f'/biz/v1/gift-boxes', {
+			"toObjectId": userId,
+			"assetId": nftId,
+			"amount": str(amount),
+			"paymentPassword": str(wallet_password),
+			"toObjectType": 4,
+			"currencyType": 105,
+			"title": str(title),
+			"maxClaimedCount": 1,
+			"distributeMode": 3
+		})
+
 	def online_chat_status(self, chatId: int, online: bool = True) -> dict:
 		return self.req.request("POST", f'/v1/chat/threads/{chatId}/party-online-status', {"partyOnlineStatus": 1 if online else 2})
 
