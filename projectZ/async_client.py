@@ -167,7 +167,10 @@ class AsyncClient(AsyncSocket):
 
 	async def get_blocked_users(self) -> BlockedUsers:
 		return BlockedUsers(await self.req.request("GET", f"/v1/users/block-uids"))
-
+        
+	async def get_visitors(self, userId: int, size: int =30):
+                return await self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&size={size}")
+	
 
 	async def get_blogs(self, type: str = 'recommend', size: int = 10) -> Blogs:
 		return Blogs(await self.req.request("GET", f'/v1/blogs?type={type}&size={size}'))
