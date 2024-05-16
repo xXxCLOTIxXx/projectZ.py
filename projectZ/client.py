@@ -158,7 +158,7 @@ class Client(Socket):
 
 	def get_circles(self, type: str = 'recommend', categoryId: int = 0, size: int = 10) -> CirclesList:
 		return CirclesList(self.req.request("GET", f"/v1/circles?type={type}&categoryId={categoryId}&size={size}"))
-        def get_visitors(self, userId: int, size: int =30):
+	def get_visitors(self, userId: int, size: int =30):
                 return self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&size={size}")
 
 	def get_blocked_users(self) -> BlockedUsers:
