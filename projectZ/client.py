@@ -158,8 +158,12 @@ class Client(Socket):
 
 	def get_circles(self, type: str = 'recommend', categoryId: int = 0, size: int = 10) -> CirclesList:
 		return CirclesList(self.req.request("GET", f"/v1/circles?type={type}&categoryId={categoryId}&size={size}"))
-
-
+	def get_visitors(self, userId: int, size: int =30):
+                return self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&size={size}")
+        
+	def next_visitor(self, userId: int, size: int =30, pageToken: str = None):
+                return self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&pageToken={pageToken}&size={size}&threadId=0&sortType=0")
+		
 	def get_blocked_users(self) -> BlockedUsers:
 		return BlockedUsers(self.req.request("GET", f"/v1/users/block-uids"))
 
@@ -318,6 +322,19 @@ class Client(Socket):
 			"toObjectType": 4,
 			"currencyType": 100,
 			"title": title
+		})
+
+	def send_nft(self, wallet_password: int, userId: int, nftId: int, amount: int = 0, title: str = "Muitas Felicidades!!!") -> dict:
+		return self.req.request("POST", f'/biz/v1/gift-boxes', {
+			"toObjectId": userId,
+			"assetId": nftId,
+			"amount": str(amount),
+			"paymentPassword": str(wallet_password),
+			"toObjectType": 4,
+			"currencyType": 105,
+			"title": str(title),
+			"maxClaimedCount": 1,
+			"distributeMode": 3
 		})
 
 	def online_chat_status(self, chatId: int, online: bool = True) -> dict:
