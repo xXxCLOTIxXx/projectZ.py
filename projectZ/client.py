@@ -160,7 +160,10 @@ class Client(Socket):
 		return CirclesList(self.req.request("GET", f"/v1/circles?type={type}&categoryId={categoryId}&size={size}"))
 	def get_visitors(self, userId: int, size: int =30):
                 return self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&size={size}")
-
+        
+	def next_visitor(self, userId: int, size: int =30, pageToken: str = None):
+                return self.req.request("GET", f"/v1/users/membership/{userId}?type=visitor&pageToken={pageToken}&size={size}&threadId=0&sortType=0")
+		
 	def get_blocked_users(self) -> BlockedUsers:
 		return BlockedUsers(self.req.request("GET", f"/v1/users/block-uids"))
 
