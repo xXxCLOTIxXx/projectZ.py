@@ -196,7 +196,10 @@ Add event handler [See](#event-types)
 - `type` (str): The type of event to handle.
 <hr>
 
+**Note:**
+Function names and arguments are identical for the asynchronous version.
 
+---
 <div align="center">
 	
 ## Examples
