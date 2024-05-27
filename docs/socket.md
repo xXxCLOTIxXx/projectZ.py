@@ -203,5 +203,37 @@ Add event handler [See](#event-types)
 <a name="examples"></a>
 This section provides examples of how to use the socket.
 </div>
-<hr>
 
+### Handling an Event
+
+```python
+import projectZ
+
+client = projectZ.Client()
+client.login(email='email', password='password')
+
+@client.event("on_text_message")
+def message(data):
+    print(data.json)
+```
+
+### Disconnecting from the Socket
+
+```python
+import projectZ
+
+client = projectZ.Client()
+client.login(email='email', password='password')
+client.ws_disconnect()
+```
+
+### Sending a Message to the Socket
+
+```python
+
+import projectZ
+
+client = projectZ.Client()
+client.login(email='email', password='password')
+client.ws_send(req_t=1, **dict(threadId=1234567, msg={"msg":"exmpl"}))
+```
