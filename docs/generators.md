@@ -13,7 +13,7 @@ print(deviceId
 client = Client(deviceId=deviceId)
 ```
 
-<h3 align="center">Gen sirnature</h3>
+<h3 align="center">Gen signature</h3>
 
 ```python
 from projectZ import gen_signature
