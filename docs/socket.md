@@ -170,6 +170,30 @@ Triggered when a gift box event occurs.
 <a name="socket-functions"></a>
 This section describes the functions provided by the socket.
 </div>
+
+### ws_send(self, req_t: int, **kwargs)
+Sends a WebSocket message.
+
+**Parameters:**
+- `req_t` (int): Request type.
+- `**kwargs`: Additional keyword arguments.
+
+**Note:**
+If the socket is not running or is disconnected, the `ws_send` function and sending messages from the client will be unavailable.
+
+---
+
+### ws_disconnect()
+Disconnects from the WebSocket.
+runs automatically when you log out of your account
+
+---
+
+### event(self, type: str)
+Add event handler [See](#event-types)
+
+**Parameters:**
+- `type` (str): The type of event to handle.
 <hr>
 
 
