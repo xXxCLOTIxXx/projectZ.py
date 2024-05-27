@@ -19,7 +19,7 @@
 <a name="event-types"></a>
 This section describes the various event types that the socket can handle.
 
-<a href="projectZ/objects/ws_types.py">See the source</a>
+<a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/projectZ/objects/ws_types.py">See the source</a>
 </div>
 
 ### on_text_message
