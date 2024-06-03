@@ -46,6 +46,7 @@ message_methods = {
     60: "on_user_typing",
     90: "on_chat_activity_type",
     120: "on_voice_call_not_answered",
+    128: "on_giftbox",
 }
 
 
@@ -97,3 +98,4 @@ class WsMethods:
     on_user_typing = message_methods[60]
     on_chat_activity_type = message_methods[90]
     on_voice_call_not_answered = message_methods[120]
+    on_giftbox = message_methods[128]

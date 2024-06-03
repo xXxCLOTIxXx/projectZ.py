@@ -5,6 +5,7 @@
 	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="licence" /></a>
 	    <a href="https://pypi.org/project/projectZ/"><img src="https://img.shields.io/pypi/v/projectZ" alt="pypi" /></a>
 	    <a href="https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.md"><img src="https://img.shields.io/website?down_message=failing&label=docs&up_color=green&up_message=passing&url=https://github.com/xXxCLOTIxXx/projectZ.py/blob/main/docs/main.md" alt="docs" /></a>
+	<img src="https://img.shields.io/pypi/dm/projectz" />
 	</p>
 	<div align="center">
 		<a href="https://github.com/xXxCLOTIxXx/xXxCLOTIxXx/blob/main/sponsor.md">
@@ -33,6 +34,20 @@ import projectZ
 client = projectZ.Client()
 client.login(email='email', password='password')
 ```
+
+
+```python
+import projectZ
+
+client = projectZ.Client()
+client.login(email='email', password='password')
+
+
+@client.event("on_text_message")
+def message(data):
+    print(data.json)
+```
+
 <br><br>
 <h4 align="center">Async login example</h4>
 

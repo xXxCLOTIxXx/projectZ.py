@@ -8,3 +8,4 @@ class ChatMessageTypes:
     DICE = 44
     POLL = 45
     TYPING = 60
+    GIFTBOX = 128
